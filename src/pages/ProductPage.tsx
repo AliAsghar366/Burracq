@@ -51,7 +51,21 @@ export default function ProductPage() {
         <div className="product-info">
           <h1>{product.name}</h1>
           <p className="product-price">
-            {product.price > 0 ? `$${product.price.toFixed(2)}` : 'Wholesale price on request'}
+            {product.price > 0 ? (
+              <>
+                {product.compareAtPrice != null && (
+                  <s
+                    className="price-compare"
+                    aria-label={`Original price $${product.compareAtPrice.toFixed(2)}`}
+                  >
+                    ${product.compareAtPrice.toFixed(2)}
+                  </s>
+                )}
+                <span className="price-now">${product.price.toFixed(2)}</span>
+              </>
+            ) : (
+              'Wholesale price on request'
+            )}
           </p>
           <p className="product-price-note">Bulk pricing available — contact us for case rates.</p>
           <div className="qty-row">

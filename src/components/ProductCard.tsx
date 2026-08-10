@@ -27,7 +27,21 @@ export default function ProductCard({ product }: { product: Product }) {
           <Link to={`/product/${product.slug}`}>{product.name}</Link>
         </h3>
         <p className="card-price">
-          {product.price > 0 ? `$${product.price.toFixed(2)}` : 'Wholesale price on request'}
+          {product.price > 0 ? (
+            <>
+              {product.compareAtPrice != null && (
+                <s
+                  className="price-compare"
+                  aria-label={`Original price $${product.compareAtPrice.toFixed(2)}`}
+                >
+                  ${product.compareAtPrice.toFixed(2)}
+                </s>
+              )}
+              <span className="price-now">${product.price.toFixed(2)}</span>
+            </>
+          ) : (
+            'Wholesale price on request'
+          )}
         </p>
       </div>
     </article>

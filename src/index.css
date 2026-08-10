@@ -604,6 +604,13 @@ img {
   color: var(--ink);
 }
 
+.price-compare {
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
+
 /* ---------- category page ---------- */
 .breadcrumb {
   font-size: 0.85rem;
