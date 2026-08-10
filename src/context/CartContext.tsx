@@ -106,8 +106,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const totalItems = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
   const subtotal = useMemo(() => items.reduce((n, i) => n + i.qty * i.price, 0), [items]);
-  // Shipping: flat $20 fee, free on orders of $300 or more.
-  const shipping = useMemo(() => (subtotal > 0 && subtotal < 300 ? 20 : 0), [subtotal]);
+  // Shipping: flat $8 fee, free on orders of $100 or more.
+  const shipping = useMemo(() => (subtotal > 0 && subtotal < 100 ? 8 : 0), [subtotal]);
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping]);
 
   const placeOrder = (): { ok: boolean; message: string } => {

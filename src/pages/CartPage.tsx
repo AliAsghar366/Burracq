@@ -114,7 +114,7 @@ export default function CartPage() {
             <span>Total</span>
             <span>${total.toFixed(2)}</span>
           </div>
-          <p className="summary-note">Free shipping on orders over $300.</p>
+          <p className="summary-note">Free shipping on orders of $100 or more.</p>
           <p className="summary-note">No account or sign-up required.</p>
 
           <h2 className="checkout-title">Delivery Details</h2>
