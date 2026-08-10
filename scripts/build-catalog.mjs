@@ -11,29 +11,27 @@ const HOME_GRIDS_JSON = 'scripts/data/home-grids.json';
 const categories = JSON.parse(readFileSync(CATEGORIES_JSON, 'utf8'));
 const rawProducts = JSON.parse(readFileSync(PRODUCTS_JSON, 'utf8'));
 
-// ---- deduplicate products by slug ----------------------------------------
-const seen = new Set();
-const products = [];
-for (const p of rawProducts) {
-  if (seen.has(p.slug)) continue;
-  seen.add(p.slug);
+// ---- build product list ---------------------------------------------------
+// Keep EVERY category listing, in crawl order. The original site lists products
+// in page order (page 1 first, then page 2…), so crawl order == original order.
+// A product may appear in several categories; each appearance is kept so every
+// category page shows the exact same products, in the same order, as the original.
+const products = rawProducts.map((p, i) => {
   // Placeholder price — replace with real price list before launch
-  const price = ((products.length % 8) * 1.5 + 7.99);
+  const price = Number(((i % 8) * 1.5 + 7.99).toFixed(2));
   const desc =
     `${p.name}<br/>Premium quality wholesale item.<br/>One size fits most.<br/>` +
     `Available in assorted colors and styles.`;
-  products.push({
+  return {
     slug: p.slug,
     name: p.name,
     category: p.category,
-    price: Number(price.toFixed(2)),
+    price,
     compareAtPrice: null,
     image: p.image,
     description: desc,
-  });
-}
-
-products.sort((a, b) => a.name.localeCompare(b.name));
+  };
+});
 
 // Taglines for categories (generic for the many new ones)
 const taglines = {
@@ -101,10 +99,15 @@ export const getCategory = (slug: string) => categories.find((c) => c.slug === s
 
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
 
-export const productsByCategory = (slug: string) =>
-  slug === 'cc'
-    ? products.filter((p) => p.category === 'cc' || p.category.startsWith('cc-'))
-    : products.filter((p) => p.category === slug);
+export const productsByCategory = (slug: string) => {
+  const list =
+    slug === 'cc'
+      ? products.filter((p) => p.category === 'cc' || p.category.startsWith('cc-'))
+      : products.filter((p) => p.category === slug);
+  // The cc umbrella unions several categories — drop cross-category duplicates.
+  const seen = new Set<string>();
+  return list.filter((p) => (seen.has(p.slug) ? false : (seen.add(p.slug), true)));
+};
 
 export const featuredProducts = products.slice(0, 12);
 
