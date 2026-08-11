@@ -1,14 +1,40 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProduct, getCategory, productsByCategory } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
+function AccordionSection({
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`accordion-item${open ? ' open' : ''}`}>
+      <button type="button" className="accordion-head" onClick={onToggle} aria-expanded={open}>
+        <span>{title}</span>
+        <span className="accordion-icon" aria-hidden="true">
+          {open ? '−' : '+'}
+        </span>
+      </button>
+      {open && <div className="accordion-body">{children}</div>}
+    </div>
+  );
+}
+
 export default function ProductPage() {
   const { slug = '' } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [openSection, setOpenSection] = useState<string>('details');
 
   const product = getProduct(slug);
 
@@ -34,6 +60,13 @@ export default function ProductPage() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    addToCart(product, qty);
+    navigate('/cart');
+  };
+
+  const toggle = (key: string) => setOpenSection((cur) => (cur === key ? '' : key));
+
   return (
     <section className="container section">
       <nav className="breadcrumb" aria-label="Breadcrumb">
@@ -50,24 +83,22 @@ export default function ProductPage() {
         </div>
         <div className="product-info">
           <h1>{product.name}</h1>
+          {product.sku && <p className="product-sku">Style #{product.sku}</p>}
           <p className="product-price">
-            {product.price > 0 ? (
-              <>
-                {product.compareAtPrice != null && (
-                  <s
-                    className="price-compare"
-                    aria-label={`Original price $${product.compareAtPrice.toFixed(2)}`}
-                  >
-                    ${product.compareAtPrice.toFixed(2)}
-                  </s>
-                )}
-                <span className="price-now">${product.price.toFixed(2)}</span>
-              </>
-            ) : (
-              'Wholesale price on request'
+            {product.compareAtPrice != null && (
+              <s
+                className="price-compare"
+                aria-label={`Was $${product.compareAtPrice.toFixed(2)}`}
+              >
+                ${product.compareAtPrice.toFixed(2)}
+              </s>
             )}
+            <span className="price-now">${product.price.toFixed(2)}</span>
           </p>
-          <p className="product-price-note">Bulk pricing available — contact us for case rates.</p>
+          <p className="product-price-note">
+            Free U.S. shipping on orders over $100 • Easy 30-day returns
+          </p>
+
           <div className="qty-row">
             <label htmlFor="qty">Quantity</label>
             <div className="stepper">
@@ -86,22 +117,50 @@ export default function ProductPage() {
               </button>
             </div>
           </div>
-          <button type="button" className="btn btn-primary btn-lg" onClick={handleAdd}>
-            {added ? 'Added ✓' : 'Add to Cart'}
-          </button>
-          <div className="product-desc">
-            <h2>Description</h2>
-            <p dangerouslySetInnerHTML={{ __html: product.description }} />
+
+          <div className="buy-row">
+            <button type="button" className="btn btn-primary btn-lg" onClick={handleAdd}>
+              {added ? 'Added to Cart ✓' : 'Add to Cart'}
+            </button>
+            <button type="button" className="btn btn-outline-dark btn-lg" onClick={handleBuyNow}>
+              Buy Now
+            </button>
+          </div>
+
+          <div className="accordion">
+            <AccordionSection
+              title="Product Details"
+              open={openSection === 'details'}
+              onToggle={() => toggle('details')}
+            >
+              <p dangerouslySetInnerHTML={{ __html: product.description }} />
+            </AccordionSection>
+            <AccordionSection
+              title="Shipping & Returns"
+              open={openSection === 'shipping'}
+              onToggle={() => toggle('shipping')}
+            >
+              <p>
+                Orders are processed within 1–2 business days and typically arrive in 3–7 business
+                days within the U.S. Shipping is free on orders over $100; otherwise a flat $8
+                applies.
+              </p>
+              <p>
+                Not quite right? Unworn items in original condition can be returned within 30 days
+                of delivery. See our <Link to="/shipping-policy">Shipping Policy</Link> and{' '}
+                <Link to="/returns">Return &amp; Refund Policy</Link> for details.
+              </p>
+            </AccordionSection>
           </div>
         </div>
       </div>
 
       {related.length > 0 && (
         <div className="section">
-          <h2 className="section-title">Related Products</h2>
+          <h2 className="section-title">You May Also Like</h2>
           <div className="product-grid">
             {related.map((p) => (
-              <ProductCard key={p.slug} product={p} />
+              <ProductCard key={`${p.category}-${p.slug}`} product={p} />
             ))}
           </div>
         </div>

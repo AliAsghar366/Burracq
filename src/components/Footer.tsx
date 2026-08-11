@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom';
 import { SUB_NAV } from '../data/nav';
 
-// Nav links spread across three columns for a clean look.
-const NAV_COLUMNS = [
-  SUB_NAV.slice(0, 5),
-  SUB_NAV.slice(5, 9),
-  SUB_NAV.slice(9, 13),
+// Nav links spread across two columns; store links in a third.
+const NAV_COLUMNS = [SUB_NAV.slice(0, 3), SUB_NAV.slice(3)];
+
+const STORE_LINKS = [
+  { label: 'About Us', to: '/about' },
+  { label: 'Contact Us', to: '/contact' },
+  { label: 'Shipping Policy', to: '/shipping-policy' },
+  { label: 'Returns & Refunds', to: '/returns' },
+  { label: 'Privacy Policy', to: '/privacy' },
+  { label: 'Terms & Conditions', to: '/terms' },
+  { label: 'FAQ', to: '/faq' },
 ];
 
 export default function Footer() {
@@ -17,9 +23,10 @@ export default function Footer() {
             <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
             <span>BURRACQ</span>
           </span>
-          <p className="footer-tagline">Wholesale winter essentials.</p>
+          <p className="footer-tagline">Fashion, Accessories &amp; Everyday Finds</p>
           <p className="footer-desc">
-            Beanies, scarves, gloves and caps in bulk — for retailers, boutiques and bulk buyers.
+            Fresh styles at prices you&apos;ll love — hats, bags, accessories and everyday
+            essentials, all in one place.
           </p>
         </div>
 
@@ -33,6 +40,13 @@ export default function Footer() {
               ))}
             </ul>
           ))}
+          <ul className="footer-list">
+            {STORE_LINKS.map((link) => (
+              <li key={link.label}>
+                <Link to={link.to}>{link.label}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

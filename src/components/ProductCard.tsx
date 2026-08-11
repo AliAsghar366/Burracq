@@ -9,6 +9,8 @@ export default function ProductCard({ product }: { product: Product }) {
     <article className="card">
       <Link to={`/product/${product.slug}`} className="card-media">
         <img src={product.image} alt={product.name} loading="lazy" />
+        {product.category === 'sale' && <span className="badge badge-sale">Sale</span>}
+        {product.category === 'new' && <span className="badge badge-new">New</span>}
         <span className="card-overlay">
           <button
             type="button"
@@ -27,21 +29,15 @@ export default function ProductCard({ product }: { product: Product }) {
           <Link to={`/product/${product.slug}`}>{product.name}</Link>
         </h3>
         <p className="card-price">
-          {product.price > 0 ? (
-            <>
-              {product.compareAtPrice != null && (
-                <s
-                  className="price-compare"
-                  aria-label={`Original price $${product.compareAtPrice.toFixed(2)}`}
-                >
-                  ${product.compareAtPrice.toFixed(2)}
-                </s>
-              )}
-              <span className="price-now">${product.price.toFixed(2)}</span>
-            </>
-          ) : (
-            'Wholesale price on request'
+          {product.compareAtPrice != null && (
+            <s
+              className="price-compare"
+              aria-label={`Was $${product.compareAtPrice.toFixed(2)}`}
+            >
+              ${product.compareAtPrice.toFixed(2)}
+            </s>
           )}
+          <span className="price-now">${product.price.toFixed(2)}</span>
         </p>
       </div>
     </article>

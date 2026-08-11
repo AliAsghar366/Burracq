@@ -115,7 +115,7 @@ export default function CartPage() {
             <span>${total.toFixed(2)}</span>
           </div>
           <p className="summary-note">Free shipping on orders of $100 or more.</p>
-          <p className="summary-note">No account or sign-up required.</p>
+          <p className="summary-note">No account or sign-up required. Easy 30-day returns on unworn items.</p>
 
           <h2 className="checkout-title">Delivery Details</h2>
           {fields.map((f) => (
@@ -137,7 +137,10 @@ export default function CartPage() {
             <p className={message.ok ? 'form-msg ok' : 'form-msg error'}>{message.text}</p>
           )}
           <p className="summary-note">
-            Payment will be handled securely at the next step.
+            No payment is taken online — we&apos;ll contact you to confirm your order and arrange
+            payment. See our{' '}
+            <Link to="/shipping-policy">Shipping Policy</Link> and{' '}
+            <Link to="/returns">Return &amp; Refund Policy</Link>.
           </p>
         </aside>
       </div>
