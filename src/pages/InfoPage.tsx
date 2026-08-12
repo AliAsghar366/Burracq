@@ -28,9 +28,21 @@ export const ABOUT_CONTENT: InfoContent = {
       ],
     },
     {
+      heading: 'Every item, sold individually',
+      paragraphs: [
+        'Everything on BURRACQ is sold as a single unit — no case packs, no minimum quantities. You pick the pieces you want and the quantity you need, and we take care of the rest.',
+      ],
+    },
+    {
+      heading: '24/7 customer support',
+      paragraphs: [
+        'Our customer support team is available 24 hours a day, 7 days a week. Email us at burrackbyrw@gmail.com or call +1 (240) 615-6110 — we\u2019re always here to help.',
+      ],
+    },
+    {
       heading: 'Our promise',
       paragraphs: [
-        'Every order is checked and packed with care, and we\u2019re here to help if anything isn\u2019t right. Questions? Reach out anytime through our Contact page.',
+        'Every order is checked and packed with care, and we\u2019re here to help if anything isn\u2019t right. Shop with confidence — we\u2019re always here to help.',
       ],
     },
   ],

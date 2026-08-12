@@ -2010,3 +2010,195 @@ img {
     min-width: 100%;
   }
 }
+
+/* ============================================================
+   Contact page
+   ============================================================ */
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.contact-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  background: var(--bg-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-card-label {
+  font-family: var(--font-head);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.contact-card-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.contact-card-value:hover {
+  color: var(--primary);
+}
+
+.contact-block-title {
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 8px;
+  margin: 34px 0 6px;
+}
+
+.contact-block-sub {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.social-link {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.social-link:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.field em {
+  color: var(--primary);
+  font-style: normal;
+}
+
+.contact-closing {
+  margin-top: 36px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+  text-align: center;
+  color: var(--muted);
+}
+
+.contact-closing strong {
+  color: var(--ink);
+}
+
+/* ============================================================
+   Responsive — adapt the layout to every screen size / ratio
+   ============================================================ */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* clamp heading sizes to the viewport so they never overflow */
+.logo {
+  font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+}
+
+.section-title {
+  font-size: clamp(1.35rem, 3.2vw, 1.9rem);
+}
+
+.hero-content h1 {
+  font-size: clamp(2rem, 5.5vw, 3.6rem);
+}
+
+.hero {
+  min-height: clamp(340px, 62vh, 520px);
+}
+
+/* very wide / ultrawide screens: keep content readable and centered */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1320px;
+  }
+}
+
+/* phones and small tablets */
+@media (max-width: 560px) {
+  .container {
+    padding: 0 14px;
+  }
+
+  .section {
+    padding: 36px 14px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
+
+  .hero {
+    min-height: 340px;
+  }
+
+  .buy-row .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* keep the header tidy on mid-size screens */
+@media (max-width: 640px) {
+  .logo {
+    font-size: 1.5rem;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* very narrow phones (<= 360px): single-column product grid */
+@media (max-width: 360px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .contact-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* short landscape screens (e.g. rotated phones): keep the hero compact */
+@media (max-height: 480px) and (orientation: landscape) {
+  .hero {
+    min-height: 260px;
+  }
+
+  .hero-content {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+}

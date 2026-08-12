@@ -18,7 +18,12 @@ const PRODUCTS_JSON = 'scripts/data/crawled-products.json';
 const HOME_GRIDS_JSON = 'scripts/data/home-grids.json';
 
 const categories = JSON.parse(readFileSync(CATEGORIES_JSON, 'utf8'));
-const rawProducts = JSON.parse(readFileSync(PRODUCTS_JSON, 'utf8'));
+// Drop products sold as multi-pair packs (e.g. "(6 pairs)", "(12pairs)").
+// BURRACQ sells single units only, so anything named as a pair bundle is removed.
+const PAIR_NAME_RE = /\bpairs?\b|\d+pairs?/i;
+const rawProducts = JSON.parse(readFileSync(PRODUCTS_JSON, 'utf8')).filter(
+  (p) => !PAIR_NAME_RE.test(p.name)
+);
 
 // Real wholesale prices scraped from the original supplier site
 // (scripts/fetch-prices.mjs). Map of product URL -> pack price.

@@ -1,19 +1,41 @@
 import { useState } from 'react';
 
-const CONTACT_EMAIL = 'hello@burracq.com';
+export const CONTACT_EMAIL = 'burrackbyrw@gmail.com';
+export const CONTACT_PHONE = '+1 (240) 615-6110';
+const WHATSAPP_LINK = 'https://wa.me/12406156110';
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: 'Order question', message: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    order: '',
+    subject: 'Order question',
+    message: '',
+  });
   const [sent, setSent] = useState(false);
 
-  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }));
+  const set =
+    (key: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`${form.subject}${form.name ? ` — ${form.name}` : ''}`);
+    const subject = encodeURIComponent(
+      `${form.subject}${form.order ? ` — Order ${form.order}` : ''}`
+    );
     const body = encodeURIComponent(
-      `${form.message}\n\n— ${form.name}\n${form.email}`
+      [
+        form.message,
+        '',
+        `— ${form.name}`,
+        form.email,
+        form.phone ? `Phone: ${form.phone}` : '',
+        form.order ? `Order #: ${form.order}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n')
     );
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
     setSent(true);
@@ -21,24 +43,122 @@ export default function ContactPage() {
 
   return (
     <section className="container section info-page">
-      <h1>Contact Us</h1>
+      <h1>We&rsquo;re Here to Help &mdash; 24/7</h1>
       <p className="info-intro">
-        Questions about an order, a product or a return? We&apos;re happy to help. We reply to most
-        messages within 1&ndash;2 business days.
+        Have a question about a product, your order, shipping, returns, or anything else? The
+        BURRACQ Customer Support Team is available 24 hours a day, 7 days a week to assist you.
+      </p>
+
+      <div className="contact-cards">
+        <div className="contact-card">
+          <span className="contact-card-label">Email</span>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="contact-card-value">
+            {CONTACT_EMAIL}
+          </a>
+        </div>
+        <div className="contact-card">
+          <span className="contact-card-label">Phone</span>
+          <a href="tel:+12406156110" className="contact-card-value">
+            {CONTACT_PHONE}
+          </a>
+        </div>
+        <div className="contact-card">
+          <span className="contact-card-label">Customer Support</span>
+          <span className="contact-card-value">24/7</span>
+        </div>
+      </div>
+
+      <h2 className="contact-block-title">Connect With Us</h2>
+      <p className="contact-block-sub">Follow or message BURRACQ on:</p>
+      <div className="social-links">
+        <a
+          className="social-link"
+          href={WHATSAPP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          WhatsApp
+        </a>
+        <a
+          className="social-link"
+          href="https://www.instagram.com/burracq"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Instagram
+        </a>
+        <a
+          className="social-link"
+          href="https://www.facebook.com/burracq"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Facebook
+        </a>
+        <a
+          className="social-link"
+          href="https://www.tiktok.com/@burracq"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          TikTok
+        </a>
+      </div>
+
+      <h2 className="contact-block-title">Send Us a Message</h2>
+      <p className="contact-block-sub">
+        You can also use the contact form below and our team will get back to you as soon as
+        possible.
       </p>
 
       <form className="contact-form" onSubmit={onSubmit}>
         <label className="field">
-          <span>Your name</span>
-          <input type="text" value={form.name} onChange={set('name')} placeholder="Your name" required />
+          <span>
+            Full Name <em>*</em>
+          </span>
+          <input
+            type="text"
+            value={form.name}
+            onChange={set('name')}
+            placeholder="Your name"
+            required
+          />
         </label>
         <label className="field">
-          <span>Email address</span>
-          <input type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" required />
+          <span>
+            Email Address <em>*</em>
+          </span>
+          <input
+            type="email"
+            value={form.email}
+            onChange={set('email')}
+            placeholder="you@example.com"
+            required
+          />
         </label>
         <label className="field">
-          <span>Topic</span>
-          <select value={form.subject} onChange={set('subject')}>
+          <span>Phone Number (Optional)</span>
+          <input
+            type="tel"
+            value={form.phone}
+            onChange={set('phone')}
+            placeholder="+1 (555) 000-0000"
+          />
+        </label>
+        <label className="field">
+          <span>Order Number (if applicable)</span>
+          <input
+            type="text"
+            value={form.order}
+            onChange={set('order')}
+            placeholder="e.g. BRQ-100234"
+          />
+        </label>
+        <label className="field">
+          <span>
+            Subject <em>*</em>
+          </span>
+          <select value={form.subject} onChange={set('subject')} required>
             <option>Order question</option>
             <option>Shipping</option>
             <option>Returns &amp; refunds</option>
@@ -47,7 +167,9 @@ export default function ContactPage() {
           </select>
         </label>
         <label className="field">
-          <span>Message</span>
+          <span>
+            Message <em>*</em>
+          </span>
           <textarea
             value={form.message}
             onChange={set('message')}
@@ -66,6 +188,18 @@ export default function ContactPage() {
           </p>
         )}
       </form>
+
+      <h2 className="contact-block-title">Order Support</h2>
+      <p>
+        For faster assistance with an existing order, please include your order number when
+        contacting us.
+      </p>
+
+      <p className="contact-closing">
+        <strong>BURRACQ</strong>
+        <br />
+        Shop with confidence. We&rsquo;re always here to help.
+      </p>
     </section>
   );
 }
