@@ -219,6 +219,7 @@ img {
 
 .search-form input {
   flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   font-family: var(--font-body);
@@ -2412,6 +2413,25 @@ label {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  overflow: hidden;
+}
+
+/* The logo must never spill into the search or cart columns —
+   truncate with an ellipsis instead of overlapping, and keep the
+   mark icon fixed while only the wordmark shrinks. */
+.logo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logo-mark {
+  flex: 0 0 auto;
+}
+
+.search-form {
+  min-width: 0;
 }
 
 /* mobile drawer (original site's slide-in accordion menu) */
@@ -2608,6 +2628,36 @@ label {
   .mega-menu {
     display: none;
   }
+
+/* phones: logo gets the full top row; cart sits beside the search below.
+   This guarantees the cart can never collide with the logo/wordmark,
+   even with iOS large-text or browser zoom. */
+@media (max-width: 560px) {
+  .header-main {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 12px 10px;
+  }
+
+  .header-left {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .search-form {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .header-account {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    align-self: center;
+    margin-left: 4px;
+  }
+}
 
   /* hero: image on top, static white block below (original mobile treatment) */
   .hero {
