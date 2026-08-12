@@ -47,7 +47,7 @@ function dedupe(list: Product[]): Product[] {
 export default function HomePage() {
   const heroSlug = homeSections.new[0];
   const heroProduct = heroSlug ? getProduct(heroSlug) : undefined;
-  const heroImage = heroProduct?.image || '';
+  const heroImage = heroProduct?.image || products[0]?.image || '';
 
   const trending = dedupe(homeSections.popular.map((s) => getProduct(s)).filter(Boolean) as Product[]);
   const newArrivals = dedupe(homeSections.new.map((s) => getProduct(s)).filter(Boolean) as Product[]);

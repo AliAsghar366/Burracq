@@ -514,6 +514,14 @@ try {
   // optional
 }
 
+// Keep only home-grid slugs that still exist in the final catalog
+// (pair-pack products filtered out above may no longer be present).
+const finalSlugs = new Set(products.map((p) => p.slug));
+const cleanHomeGrids = {};
+for (const key of ['featured', 'popular', 'new']) {
+  cleanHomeGrids[key] = (homeGrids[key] || []).filter((slug) => finalSlugs.has(slug));
+}
+
 // ---- emit catalog.ts ------------------------------------------------------
 const catJson = JSON.stringify(enrichedCategories, null, 1);
 const prodJson = JSON.stringify(products, null, 1);
@@ -575,9 +583,9 @@ export const productsByCategory = (slug: string) => {
 export const featuredProducts = products.slice(0, 12);
 
 export const homeSections = {
-  featured: ${JSON.stringify(homeGrids.featured)},
-  popular: ${JSON.stringify(homeGrids.popular)},
-  new: ${JSON.stringify(homeGrids.new)},
+  featured: ${JSON.stringify(cleanHomeGrids.featured)},
+  popular: ${JSON.stringify(cleanHomeGrids.popular)},
+  new: ${JSON.stringify(cleanHomeGrids.new)},
 };
 `;
 

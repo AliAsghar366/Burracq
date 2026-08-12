@@ -8,12 +8,16 @@ export default function Header() {
   const { totalItems } = useCart();
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const closeTimer = useRef<number | undefined>(undefined);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Close the dropdown whenever we navigate.
   useEffect(() => {
     setOpenMenu(null);
+    setMobileOpen(false);
+    setExpandedItem(null);
   }, [location.pathname]);
 
   // Close on outside click / Escape.
@@ -24,7 +28,10 @@ export default function Header() {
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpenMenu(null);
+      if (e.key === 'Escape') {
+        setOpenMenu(null);
+        setMobileOpen(false);
+      }
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('touchstart', onDown);
@@ -35,6 +42,14 @@ export default function Header() {
       document.removeEventListener('keydown', onKey);
     };
   }, []);
+
+  // Lock body scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   const open = (label: string) => {
     window.clearTimeout(closeTimer.current);
@@ -56,13 +71,30 @@ export default function Header() {
     return item.children?.some((c) => location.pathname === c.to) ?? false;
   };
 
+  const toggleExpanded = (label: string) => {
+    setExpandedItem((prev) => (prev === label ? null : label));
+  };
+
   return (
     <header className="site-header">
       <div className="header-main container">
-        <Link to="/" className="logo" aria-label="BURRACQ home">
-          <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-          <span>BURRACQ</span>
-        </Link>
+        <div className="header-left">
+          {/* mobile hamburger (ilovehana-style drawer) */}
+          <button
+            className={`mobile-menu-toggle${mobileOpen ? ' is-open' : ''}`}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            <span className="mobile-menu-toggleIcon" aria-hidden="true" />
+          </button>
+
+          <Link to="/" className="logo" aria-label="BURRACQ home">
+            <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
+            <span>BURRACQ</span>
+          </Link>
+        </div>
 
         <SearchForm />
 
@@ -146,6 +178,78 @@ export default function Header() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* mobile drawer (ilovehana-style accordion nav) */}
+      <div
+        id="mobile-nav"
+        className={`mobile-nav${mobileOpen ? ' open' : ''}`}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          className="mobile-nav-backdrop"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+        <div className="mobile-nav-panel" role="dialog" aria-label="Menu">
+          <button
+            className="mobile-nav-close"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="currentColor" d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
+
+          <ul className="mobile-nav-list">
+            {SUB_NAV.map((link) => {
+              const hasChildren = link.children && link.children.length > 0;
+              const expanded = expandedItem === link.label;
+              const active = isItemActive(link);
+              return (
+                <li key={link.label} className="mobile-nav-item">
+                  <div className="mobile-nav-row">
+                    <Link
+                      to={link.to}
+                      className={`mobile-nav-link${active ? ' active' : ''}`}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                    {hasChildren && (
+                      <button
+                        className={`mobile-nav-toggle${expanded ? ' is-open' : ''}`}
+                        aria-label={`${expanded ? 'Collapse' : 'Expand'} ${link.label}`}
+                        aria-expanded={expanded}
+                        onClick={() => toggleExpanded(link.label)}
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                          <path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  {hasChildren && (
+                    <ul className={`mobile-nav-sublist${expanded ? ' open' : ''}`}>
+                      {link.children?.map((child) => (
+                        <li key={child.label}>
+                          <Link
+                            to={child.to}
+                            className="mobile-nav-sublink"
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </header>

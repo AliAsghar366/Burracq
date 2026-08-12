@@ -2319,3 +2319,335 @@ label {
     padding-bottom: 6px;
   }
 }
+
+/* ============================================================
+   ilovehana.com UI style alignment
+   ============================================================ */
+
+/* square corners like the original site's buttons/inputs */
+.btn {
+  border-radius: 0;
+}
+
+.search-form,
+.field input,
+.field select,
+.field textarea {
+  border-radius: 0;
+}
+
+/* nav hover: light-gray background + 2px underline (original site) */
+.sub-nav-link {
+  padding: 6px 10px;
+  margin: -2px -10px;
+}
+
+.sub-nav-item:hover .sub-nav-link {
+  background: var(--bg-soft);
+  border-bottom-color: #4e4e4e;
+}
+
+.sub-nav-item.open .sub-nav-link,
+.sub-nav-item .sub-nav-link.active {
+  background: var(--bg-soft);
+}
+
+/* hamburger button — hidden on desktop */
+.mobile-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.mobile-menu-toggleIcon,
+.mobile-menu-toggleIcon::before,
+.mobile-menu-toggleIcon::after {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #424242;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.mobile-menu-toggleIcon {
+  position: relative;
+}
+
+.mobile-menu-toggleIcon::before {
+  position: absolute;
+  top: -7px;
+  left: 0;
+}
+
+.mobile-menu-toggleIcon::after {
+  position: absolute;
+  top: 7px;
+  left: 0;
+}
+
+.mobile-menu-toggle.is-open .mobile-menu-toggleIcon {
+  background: transparent;
+}
+
+.mobile-menu-toggle.is-open .mobile-menu-toggleIcon::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.mobile-menu-toggle.is-open .mobile-menu-toggleIcon::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* mobile drawer (original site's slide-in accordion menu) */
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  visibility: hidden;
+}
+
+.mobile-nav.open {
+  visibility: visible;
+}
+
+.mobile-nav-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-nav.open .mobile-nav-backdrop {
+  opacity: 1;
+}
+
+.mobile-nav-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  background: #fff;
+  transform: translateX(-100%);
+  transition: transform 0.28s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 calc(20px + env(safe-area-inset-bottom));
+}
+
+.mobile-nav.open .mobile-nav-panel {
+  transform: translateX(0);
+}
+
+.mobile-nav-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-soft);
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.mobile-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 60px 0 0;
+}
+
+.mobile-nav-item {
+  border-bottom: 1px solid #d2d2d2;
+}
+
+.mobile-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-nav-link {
+  flex: 1;
+  display: block;
+  padding: 16px 20px;
+  font-family: var(--font-head);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.mobile-nav-link.active {
+  color: var(--primary);
+}
+
+.mobile-nav-toggle {
+  width: 46px;
+  height: 46px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-toggle.is-open {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.mobile-nav-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0 20px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s ease;
+}
+
+.mobile-nav-sublist.open {
+  max-height: 520px;
+}
+
+.mobile-nav-sublink {
+  display: block;
+  padding: 12px 0 12px 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-left: 2px solid var(--line);
+}
+
+.mobile-nav-sublink:hover {
+  color: var(--primary);
+  border-left-color: var(--primary);
+}
+
+/* hero: left-aligned content over a dark overlay (original site) */
+.hero {
+  text-align: left;
+}
+
+.hero-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(20, 12, 18, 0.72) 0%,
+    rgba(20, 12, 18, 0.45) 55%,
+    rgba(20, 12, 18, 0.22) 100%
+  );
+}
+
+.hero-content {
+  max-width: 640px;
+  text-align: left;
+}
+
+.hero-content h1 {
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  letter-spacing: 1px;
+}
+
+@media (max-width: 800px) {
+  /* mobile header: hamburger + logo, search below, cart right */
+  .header-main {
+    grid-template-columns: auto 1fr auto;
+    justify-items: stretch;
+    gap: 12px;
+  }
+
+  .header-left {
+    justify-self: start;
+  }
+
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+
+  .search-form {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: 100%;
+  }
+
+  .header-account {
+    justify-self: end;
+  }
+
+  /* drawer replaces the scrollable strip on phones/tablets */
+  .sub-nav {
+    display: none;
+  }
+
+  .mega-menu {
+    display: none;
+  }
+
+  /* hero: image on top, static white block below (original mobile treatment) */
+  .hero {
+    flex-direction: column;
+    min-height: 0;
+    background: #fff;
+    padding-bottom: 36px;
+  }
+
+  .hero-bg {
+    position: static;
+    width: 100%;
+    height: 230px;
+  }
+
+  .hero-overlay {
+    display: none;
+  }
+
+  .hero-content {
+    max-width: 100%;
+    padding: 28px 14px 0;
+  }
+
+  .hero-eyebrow {
+    color: var(--primary);
+  }
+
+  .hero-content h1 {
+    color: var(--ink);
+    text-shadow: none;
+  }
+
+  .hero-sub {
+    color: var(--muted);
+    text-shadow: none;
+  }
+
+  .hero .btn-outline {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+}
