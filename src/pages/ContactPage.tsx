@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { SOCIAL_LINKS } from '../lib/socials';
 
 export const CONTACT_EMAIL = 'burrackbyrw@gmail.com';
 export const CONTACT_PHONE = '+1 (240) 615-6110';
-const WHATSAPP_LINK = 'https://wa.me/12406156110';
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -71,36 +71,16 @@ export default function ContactPage() {
       <h2 className="contact-block-title">Connect With Us</h2>
       <p className="contact-block-sub">Follow or message BURRACQ on:</p>
       <div className="social-links">
-        <a
-          className="social-link"
-          href={WHATSAPP_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a className="social-link" href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noopener noreferrer">
           WhatsApp
         </a>
-        <a
-          className="social-link"
-          href="https://www.instagram.com/burracq"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a className="social-link" href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer">
           Instagram
         </a>
-        <a
-          className="social-link"
-          href="https://www.facebook.com/burracq"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a className="social-link" href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer">
           Facebook
         </a>
-        <a
-          className="social-link"
-          href="https://www.tiktok.com/@burracq"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a className="social-link" href={SOCIAL_LINKS.tiktok} target="_blank" rel="noopener noreferrer">
           TikTok
         </a>
       </div>

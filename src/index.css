@@ -1078,6 +1078,36 @@ img {
   margin: 0 auto;
 }
 
+.footer-socials {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.footer-social:hover {
+  background: var(--primary);
+  transform: translateY(-2px);
+}
+
 .footer-nav-columns {
   display: grid;
   grid-template-columns: repeat(3, minmax(120px, 200px));
