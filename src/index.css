@@ -2143,7 +2143,15 @@ img {
    ============================================================ */
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* older browsers without `overflow: clip` support */
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 /* clamp heading sizes to the viewport so they never overflow */
@@ -2230,5 +2238,84 @@ body {
   .hero-content {
     padding-top: 32px;
     padding-bottom: 32px;
+  }
+}
+
+/* ============================================================
+   iOS / touch — Safari fixes
+   ============================================================ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* remove the double-tap zoom delay on interactive elements */
+button,
+a,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+/* iOS auto-zooms into any form control smaller than 16px on focus.
+   On touch devices keep every input at 16px. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* dynamic viewport height — use svh (small viewport) on iOS so the
+   toolbar never hides content; vh stays as the fallback for old browsers */
+.hero {
+  min-height: clamp(340px, 62vh, 520px);
+  min-height: clamp(340px, 62svh, 520px);
+}
+
+.admin {
+  min-height: 60vh;
+  min-height: 60svh;
+}
+
+/* iPhone notch / home indicator safe areas */
+.header-main {
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+
+.footer-copyright {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* momentum scrolling for horizontally scrollable areas */
+.sub-nav,
+.admin-table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* comfortable touch targets on phones/tablets */
+@media (pointer: coarse) {
+  .btn {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    min-height: 46px;
+  }
+
+  .footer-social {
+    width: 46px;
+    height: 46px;
+  }
+
+  .sub-nav-link {
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 }
