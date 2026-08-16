@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getProduct, getCategory, productsByCategory } from '../data/catalog';
+import {
+  getProduct,
+  getCategory,
+  productsByCategory,
+  variantsFor,
+  variantNameOf,
+  uniqueProducts,
+  type Product,
+} from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
+import { fullImageOf } from '../lib/images';
+
+const PLACEHOLDER = '/placeholder.svg';
 
 function AccordionSection({
   title,
@@ -35,6 +46,7 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [openSection, setOpenSection] = useState<string>('details');
+  const [selectedSlug, setSelectedSlug] = useState(slug);
 
   const product = getProduct(slug);
 
@@ -50,22 +62,57 @@ export default function ProductPage() {
   }
 
   const category = getCategory(product.category);
-  const related = productsByCategory(product.category)
+  const variants = variantsFor(product);
+
+  // The variation currently being viewed. Clicking a swatch/thumbnail swaps
+  // the main image in place; the picked variation is what gets added to cart.
+  const selected: Product = (() => {
+    if (selectedSlug === product.slug) return product;
+    const v = variants.find((x) => x.slug === selectedSlug);
+    if (v) {
+      const p = getProduct(v.slug);
+      if (p) return p;
+    }
+    return product;
+  })();
+  const selectedName = selectedSlug === product.slug ? '' : variantNameOf(selected);
+  const related = uniqueProducts(productsByCategory(product.category))
     .filter((p) => p.slug !== product.slug)
     .slice(0, 4);
 
   const handleAdd = () => {
-    addToCart(product, qty);
+    addToCart(
+      {
+        slug: selected.slug,
+        name: selectedName ? `${selected.name} — ${selectedName}` : selected.name,
+        price: selected.price,
+        image: selected.image,
+      },
+      qty
+    );
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, qty);
+    addToCart(
+      {
+        slug: selected.slug,
+        name: selectedName ? `${selected.name} — ${selectedName}` : selected.name,
+        price: selected.price,
+        image: selected.image,
+      },
+      qty
+    );
     navigate('/cart');
   };
 
   const toggle = (key: string) => setOpenSection((cur) => (cur === key ? '' : key));
+
+  const selectVariant = (vSlug: string) => {
+    setSelectedSlug(vSlug);
+    setAdded(false);
+  };
 
   return (
     <section className="container section">
@@ -79,25 +126,91 @@ export default function ProductPage() {
 
       <div className="product-view">
         <div className="product-media">
-          <img src={product.image} alt={product.name} />
+          <img
+            key={selected.slug}
+            src={fullImageOf(selected.image)}
+            alt={selectedName ? `${product.name} — ${selectedName}` : product.name}
+            loading="eager"
+            decoding="async"
+            onError={(e) => {
+              if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
+            }}
+          />
+          {variants.length > 1 && (
+            <div className="product-thumbs" aria-label="All variations">
+              {variants.map((v) => (
+                <button
+                  key={v.slug}
+                  type="button"
+                  className={`product-thumb${v.slug === selected.slug ? ' is-active' : ''}`}
+                  title={v.name}
+                  aria-label={`View ${v.name}`}
+                  aria-pressed={v.slug === selected.slug}
+                  onClick={() => selectVariant(v.slug)}
+                >
+                  <img
+                    src={fullImageOf(v.image)}
+                    alt={v.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="product-info">
           <h1>{product.name}</h1>
           {product.sku && <p className="product-sku">Style #{product.sku}</p>}
           <p className="product-price">
-            {product.compareAtPrice != null && (
+            {selected.compareAtPrice != null && (
               <s
                 className="price-compare"
-                aria-label={`Was $${product.compareAtPrice.toFixed(2)}`}
+                aria-label={`Was $${selected.compareAtPrice.toFixed(2)}`}
               >
-                ${product.compareAtPrice.toFixed(2)}
+                ${selected.compareAtPrice.toFixed(2)}
               </s>
             )}
-            <span className="price-now">${product.price.toFixed(2)}</span>
+            <span className="price-now">${selected.price.toFixed(2)}</span>
           </p>
           <p className="product-price-note">
             Free U.S. shipping on orders over $100 • Easy 30-day returns
           </p>
+
+          {variants.length > 1 && (
+            <div className="variant-picker">
+              <div className="variant-picker-label">
+                <span>Color:</span>
+                <strong>{selectedName || variantNameOf(product)}</strong>
+              </div>
+              <div className="variant-swatches" role="listbox" aria-label="Color">
+                {variants.map((v) => (
+                  <button
+                    key={v.slug}
+                    type="button"
+                    role="option"
+                    aria-selected={v.slug === selected.slug}
+                    className={`variant-swatch${v.slug === selected.slug ? ' is-active' : ''}`}
+                    title={v.name}
+                    onClick={() => selectVariant(v.slug)}
+                  >
+                    <img
+                      src={fullImageOf(v.image)}
+                      alt={v.name}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="qty-row">
             <label htmlFor="qty">Quantity</label>
@@ -160,7 +273,7 @@ export default function ProductPage() {
           <h2 className="section-title">You May Also Like</h2>
           <div className="product-grid">
             {related.map((p) => (
-              <ProductCard key={`${p.category}-${p.slug}`} product={p} />
+              <ProductCard key={p.slug} product={p} />
             ))}
           </div>
         </div>

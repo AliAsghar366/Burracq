@@ -23,7 +23,7 @@ export function ordersToPdf(orders: AdminOrder[], title = 'All Orders'): void {
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.setTextColor(20, 20, 26);
-  doc.text('BURRACQ — Order Report', 14, 16);
+  doc.text('BURACQ — Order Report', 14, 16);
   doc.setFontSize(10);
   doc.setTextColor(118, 118, 127);
   doc.text(`${title} · Generated ${new Date().toLocaleString()} · ${orders.length} order(s)`, 14, 23);
@@ -49,7 +49,7 @@ export function orderToPdf(order: AdminOrder): void {
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.setTextColor(20, 20, 26);
-  doc.text('BURRACQ — Order Detail', 14, 16);
+  doc.text('BURACQ — Order Detail', 14, 16);
   doc.setFontSize(10);
   doc.setTextColor(118, 118, 127);
   doc.text(

@@ -1,6 +1,6 @@
-# BURRACQ — Fashion, Accessories & Everyday Finds
+# BURACQ — Fashion, Accessories & Everyday Finds
 
-A customer-facing retail e-commerce storefront (React + TypeScript + Vite). BURRACQ
+A customer-facing retail e-commerce storefront (React + TypeScript + Vite). BURACQ
 sells individual products — hats, bags, accessories, apparel and more — at retail
 prices, with the supplier (HANA / ilovehana.com) kept behind the scenes.
 
@@ -23,6 +23,14 @@ The store is built from a crawled snapshot of the supplier's catalog
   "C.C" brand, pack suffixes and code fragments are stripped from titles.
 - **Original copy** — every product description and category tagline is
   generated retail copy (no supplier text is reused).
+- **Variations** — products that share a supplier code (or a specific name,
+  for colorways that ship under their own code) are treated as one product
+  with color/style variations. Product pages show a color picker (swatches
+  link to each variant's page) and grids dedupe so each product appears once
+  with a swatch row on its card.
+- **Fast-loading images** — grid cards request a smaller CDN stencil size
+  (450×450) instead of the full 900×900 image, and a bundled placeholder
+  renders if any image ever fails to load.
 
 ### Rebuilding the catalog
 
@@ -32,6 +40,16 @@ npm run dev                      # local dev server
 npm run build                    # typecheck + production build
 npm run lint                     # oxlint
 ```
+
+### Variations & dedupe
+
+`src/data/catalog.ts` (generated) exposes helpers used across the storefront:
+
+- `variantsFor(product)` — every color/style variation of a product
+  (grouped by supplier code, falling back to a shared specific name).
+- `variantNameOf(product)` — human-readable label parsed from the slug.
+- `uniqueProducts(list)` — collapses multi-category duplicates and color
+  variations so grids show one card per product.
 
 Re-crawling the supplier site is optional and rate-limited:
 

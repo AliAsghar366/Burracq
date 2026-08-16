@@ -19,7 +19,7 @@ export default function CategoryIndexPage() {
   return (
     <section className="container section">
       <h1>All Categories</h1>
-      <p className="section-sub">Browse the full BURRACQ lineup — {categories.length} categories.</p>
+      <p className="section-sub">Browse the full BURACQ lineup — {categories.length} categories.</p>
 
       {sections.map((s) => {
         const sectionCats = s.slugs.map((slug) => getCat(slug)).filter(Boolean);

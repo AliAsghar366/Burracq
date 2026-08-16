@@ -19,7 +19,7 @@ const HOME_GRIDS_JSON = 'scripts/data/home-grids.json';
 
 const categories = JSON.parse(readFileSync(CATEGORIES_JSON, 'utf8'));
 // Drop products sold as multi-pair packs (e.g. "(6 pairs)", "(12pairs)").
-// BURRACQ sells single units only, so anything named as a pair bundle is removed.
+// BURACQ sells single units only, so anything named as a pair bundle is removed.
 const PAIR_NAME_RE = /\bpairs?\b|\d+pairs?/i;
 const rawProducts = JSON.parse(readFileSync(PRODUCTS_JSON, 'utf8')).filter(
   (p) => !PAIR_NAME_RE.test(p.name)
@@ -557,6 +557,12 @@ export interface Product {
   description: string;
 }
 
+export interface ProductVariant {
+  name: string;
+  slug: string;
+  image: string;
+}
+
 export const categories: Category[] = ${catJson};
 
 export const products: Product[] = ${prodJson};
@@ -564,6 +570,100 @@ export const products: Product[] = ${prodJson};
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
 
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
+
+// First occurrence of each product slug (products are listed once per
+// category, so the same slug can appear several times in the array).
+const productBySlug = new Map<string, Product>();
+for (const p of products) {
+  if (!productBySlug.has(p.slug)) productBySlug.set(p.slug, p);
+}
+
+// Tokens that never belong in a variant label (color/size words are kept).
+const VARIANT_JUNK = new Set([
+  'model', 'main', 'front', 'back', 'side', 'detail', 'view',
+  'one', 'size', 'set', 'kids', 'baby', 'junior', 'women', 'men',
+  'new', 'sale', 'style', 'color', 'assorted',
+  'pc', 'pcs', 'pack', 'pairs', 'dz', 'dozen', 'piece', 'pieces',
+]);
+
+// Generic fallback names (e.g. "Scarf", "Classic Headband") are reused across
+// many unrelated products, so only specific names can group variations.
+const isSpecificName = (name: string) => name.trim().split(/\\s+/).length >= 3;
+
+// Human-readable label for a product's variation (e.g. colorway), parsed
+// from the part of its slug that follows the supplier code.
+export const variantNameOf = (p: Product): string => {
+  const sku = (p.sku || '').toLowerCase();
+  if (!sku) return 'One Size';
+  let tail = '';
+  const slug = p.slug.toLowerCase();
+  const idx = slug.lastIndexOf(sku);
+  if (idx !== -1) {
+    tail = slug.slice(idx + sku.length);
+  } else {
+    const bare = sku.replace(/[^a-z0-9]/g, '');
+    const idx2 = slug.lastIndexOf(bare);
+    if (idx2 !== -1) tail = slug.slice(idx2 + bare.length);
+  }
+  const parts = tail
+    .split(/[-_]/)
+    .map((t) => t.trim())
+    .filter(
+      (t) =>
+        t &&
+        !VARIANT_JUNK.has(t) &&
+        !/^\\d{1,2}$/.test(t) &&
+        !(/\\d/.test(t) && t.length <= 3)
+    );
+  if (parts.length === 0) return 'Assorted';
+  return parts.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(' ');
+};
+
+// Every color/style variation of a product, each with its own page. Products
+// are grouped by supplier code; colorways that ship under their own code (but
+// share a specific name) are grouped too. Empty when no variations are listed.
+export const variantsFor = (product: Product): ProductVariant[] => {
+  const out: ProductVariant[] = [];
+  const name = product.name.toLowerCase();
+  const specific = isSpecificName(product.name);
+  for (const p of products) {
+    if (productBySlug.get(p.slug) !== p) continue;
+    const sameSku = product.sku !== '' && p.sku !== '' && p.sku === product.sku;
+    const sameName = specific && p.name.toLowerCase() === name;
+    if (!sameSku && !sameName) continue;
+    out.push({ name: variantNameOf(p), slug: p.slug, image: p.image });
+  }
+  return out;
+};
+
+// Collapses multi-category duplicates and color variations into one card per
+// product, keeping the first occurrence of each family.
+export const uniqueProducts = (list: Product[]): Product[] => {
+  // Pass 1: dedupe by supplier code (falling back to the slug), which folds
+  // multi-category listings and same-code colorways into one product.
+  const seen = new Set<string>();
+  const out: Product[] = [];
+  for (const p of list) {
+    const key = p.sku || p.slug;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  // Pass 2: colorways that ship under distinct codes share a specific name
+  // (e.g. -MS0394/-MS0395/-MS0396) — collapse those so each product shows
+  // once, with its variations.
+  const nameSeen = new Set<string>();
+  const result: Product[] = [];
+  for (const p of out) {
+    const key = isSpecificName(p.name)
+      ? 'n:' + p.name.toLowerCase()
+      : 's:' + p.slug;
+    if (nameSeen.has(key)) continue;
+    nameSeen.add(key);
+    result.push(p);
+  }
+  return result;
+};
 
 // Categories that make up the virtual "Women" landing page.
 const WOMEN_CATEGORIES = ${womenJson};

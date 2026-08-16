@@ -1,5 +1,5 @@
 /* ============================================================
-   BURRACQ — design system
+   BURACQ — design system
    Colors/fonts follow the original storefront (#df0072, Roboto
    Condensed + Roboto). No contact/address info is shown anywhere.
    ============================================================ */
@@ -58,15 +58,22 @@ img {
   display: block;
 }
 
+/* ilovehana.com container: 1230px wide, 15px side padding, at every
+   breakpoint (HANA keeps this width even on ultrawide screens). */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1230px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 15px;
+}
+
+.main {
+  min-height: 60vh;
+  padding-bottom: 96px; /* HANA's body bottom rhythm (6rem) */
 }
 
 .section {
-  padding: 48px 20px;
+  padding: 60px 0;
 }
 
 .section-title {
@@ -155,10 +162,10 @@ img {
 }
 
 .btn-quick {
-  background: #fff;
-  color: var(--ink);
-  padding: 10px 18px;
-  font-size: 0.85rem;
+  background: rgba(223, 0, 114, 0.92);
+  color: #fff;
+  padding: 9px 18px;
+  font-size: 0.8rem;
 }
 
 .btn-quick:hover {
@@ -168,8 +175,17 @@ img {
 
 /* ---------- header (original layout) ---------- */
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
+  transition: box-shadow 0.25s ease;
+}
+
+/* slim sticky header after scrolling (original site's fixed header) */
+.site-header.is-stuck {
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
 }
 
 .header-main {
@@ -179,29 +195,36 @@ img {
   gap: 28px;
   padding-top: 18px;
   padding-bottom: 18px;
+  transition: padding 0.25s ease;
+}
+
+.site-header.is-stuck .header-main {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.site-header.is-stuck .sub-nav {
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 2.4rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: var(--ink);
-  line-height: 1;
+  line-height: 0;
   white-space: nowrap;
 }
 
-.logo-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+/* brand wordmark (public/logo.png) — fixed height, auto width */
+.logo-img {
+  display: block;
+  height: 42px;
+  width: auto;
+  max-width: none;
 }
 
 .logo:hover {
-  color: var(--primary);
+  opacity: 0.85;
 }
 
 .search-form {
@@ -210,11 +233,13 @@ img {
   gap: 8px;
   border: 1px solid #d0d0d5;
   border-radius: var(--radius);
-  padding: 9px 12px;
+  padding: 0 14px;
   color: var(--muted);
   max-width: 520px;
   width: 100%;
+  height: 44px;
   justify-self: center;
+  background: #fff;
 }
 
 .search-form input {
@@ -478,28 +503,45 @@ img {
   border-top: 1px solid var(--line);
 }
 
-/* ---------- category tiles ---------- */
+/* ---------- category tiles (ilovehana.com collage) ----------
+   Flat, square-cornered tiles with mixed aspect ratios like HANA's
+   category collage: a tall portrait, a wide landscape, squares, and
+   one feature tile carrying big bold uppercase type. 20px gutters,
+   no shadows. */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
+  align-items: start;
   gap: 20px;
 }
 
 .category-tile {
   position: relative;
-  border-radius: var(--radius);
+  border-radius: 0;
   overflow: hidden;
-  aspect-ratio: 3 / 4;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: var(--bg-soft);
 }
 
-.category-tile:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow);
+.category-tile--tall {
+  aspect-ratio: 3 / 4;
+}
+
+.category-tile--wide {
+  aspect-ratio: 4 / 3;
+}
+
+.category-tile--square {
+  aspect-ratio: 1 / 1;
+}
+
+.category-tile--feature {
+  aspect-ratio: 3 / 4;
 }
 
 .category-tile img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -507,49 +549,110 @@ img {
 }
 
 .category-tile:hover img {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
+/* small uppercase label, bottom-left, on a soft scrim */
 .category-tile-label {
   position: absolute;
-  inset: auto 0 0 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  left: 0;
+  right: 0;
+  bottom: 0;
   color: #fff;
-  padding: 40px 16px 16px;
+  padding: 30px 14px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: flex-end;
 }
 
 .category-tile-label strong {
   font-family: var(--font-head);
-  font-size: 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* feature tile — big bold uppercase type over the image, top-left,
+   mirroring HANA's "TRUCKER CAP" banner */
+.category-tile--feature::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(155deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.12) 48%, transparent 70%);
+}
+
+.category-tile-feature {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  right: 22px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  color: #fff;
+}
+
+.category-tile-feature strong {
+  font-family: var(--font-head);
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  line-height: 1;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
 }
 
-.category-tile-label small {
-  opacity: 0.85;
+.category-tile-feature small {
+  font-size: 0.85rem;
+  opacity: 0.92;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
-/* ---------- product cards ---------- */
+.category-tile-feature em {
+  margin-top: 10px;
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- product cards (ilovehana.com grid: 4 cols desktop, 3 tablet,
+   2 mobile; ~1.5rem horizontal gap, 3rem vertical like HANA's cards) ---------- */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 40px 24px;
+}
+
+@media (max-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .card {
   background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: none;
+  border-radius: 0;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow);
+  transform: translateY(-4px);
 }
 
 .card-media {
@@ -557,42 +660,61 @@ img {
   display: block;
   overflow: hidden;
   aspect-ratio: 1 / 1;
-  background: var(--bg-soft);
+  background: #fff;
 }
 
 .card-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  border: 1px solid #e3e3e3;
+  transition: transform 0.5s ease;
 }
 
 .card:hover .card-media img {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .card-overlay {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: 0;
   display: flex;
+  align-items: center;
   justify-content: center;
   padding: 12px;
-  transform: translateY(110%);
-  transition: transform 0.3s ease;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.18);
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .card:hover .card-overlay {
-  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* only show the hover overlay on devices that actually hover */
+@media (hover: none) {
+  .card-overlay {
+    display: none;
+  }
 }
 
 .card-body {
-  padding: 14px 16px 18px;
+  padding: 12px 0 0;
+  text-align: left;
 }
 
 .card-title {
-  font-size: 0.98rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 6px;
+  line-height: 1.35;
+  margin-bottom: 5px;
+}
+
+.card-title a {
+  color: var(--ink);
 }
 
 .card-title a:hover {
@@ -603,6 +725,50 @@ img {
   margin: 0;
   font-weight: 700;
   color: var(--ink);
+}
+
+/* color/style swatches on cards (variations of the same product) */
+.card-variants {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 26px;
+}
+
+.card-swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.card-swatch:hover {
+  transform: translateY(-2px);
+}
+
+.card-swatch.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.card-swatch img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+
+.card-swatch-more {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .price-compare {
@@ -626,6 +792,11 @@ img {
   color: var(--primary);
 }
 
+.category-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
 .category-head h1 {
   font-size: 2.4rem;
   text-transform: uppercase;
@@ -641,6 +812,7 @@ img {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+  color: var(--muted);
 }
 
 /* ---------- sort + pagination row (original layout) ---------- */
@@ -719,6 +891,97 @@ img {
   color: var(--muted);
   font-size: 0.9rem;
   margin: 0 0 22px;
+}
+
+/* ---------- color/style variations (original site's option picker) ---------- */
+.variant-picker {
+  margin-bottom: 20px;
+}
+
+.variant-picker-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.variant-picker-label strong {
+  color: var(--primary);
+  text-transform: capitalize;
+}
+
+.variant-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.variant-swatch {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.variant-swatch:hover {
+  transform: translateY(-2px);
+}
+
+.variant-swatch.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(223, 0, 114, 0.25);
+}
+
+.variant-swatch img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* thumbnail gallery of every variation inside the media column */
+.product-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+
+.product-thumb {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.product-thumb:hover {
+  border-color: var(--muted);
+}
+
+.product-thumb.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(223, 0, 114, 0.25);
+}
+
+.product-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .qty-row {
@@ -1050,7 +1313,7 @@ img {
 .site-footer {
   background: #fff6f6;
   border-top: 1px solid #ebebeb;
-  margin-top: 40px;
+  margin-top: 0; /* .main provides the 96px bottom rhythm */
 }
 
 .footer-brand-block {
@@ -1060,7 +1323,19 @@ img {
 
 .footer-logo {
   display: inline-flex;
-  font-size: 2.2rem;
+}
+
+.footer-logo .logo-img {
+  height: 38px;
+}
+
+.admin-brand .logo-img {
+  height: 30px;
+}
+
+.admin-login-logo {
+  height: 44px;
+  margin: 0 auto 14px;
 }
 
 .footer-tagline {
@@ -1132,7 +1407,7 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.88rem;
-  color: var(--text);
+  color: var(--muted);
   transition: color 0.2s ease;
 }
 
@@ -1539,6 +1814,123 @@ img {
 
   .buy-row .btn {
     flex: 1 1 100%;
+  }
+}
+
+/* ============================================================
+   Homepage hero carousel (autoplaying banner slider)
+   ============================================================ */
+.hero-carousel {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.hero-carousel-track {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1717 / 916;
+}
+
+.hero-carousel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.7s ease, visibility 0.7s;
+}
+
+.hero-carousel-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+/* prev/next arrows */
+.hero-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.hero-carousel:hover .hero-carousel-arrow,
+.hero-carousel:focus-within .hero-carousel-arrow,
+.hero-carousel-arrow:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hero-carousel-arrow:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.hero-carousel-arrow--prev {
+  left: 14px;
+}
+
+.hero-carousel-arrow--next {
+  right: 14px;
+}
+
+/* dot indicators */
+.hero-carousel-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+
+.hero-carousel-dot {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.hero-carousel-dot:hover {
+  transform: scale(1.2);
+}
+
+.hero-carousel-dot.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* touch devices: keep arrows visible since there is no hover */
+@media (hover: none) {
+  .hero-carousel-arrow {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -2155,9 +2547,9 @@ body {
   }
 }
 
-/* clamp heading sizes to the viewport so they never overflow */
-.logo {
-  font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+/* keep the wordmark proportional to the viewport */
+.logo-img {
+  height: clamp(34px, 4.2vw, 42px);
 }
 
 .section-title {
@@ -2172,21 +2564,14 @@ body {
   min-height: clamp(340px, 62vh, 520px);
 }
 
-/* very wide / ultrawide screens: keep content readable and centered */
-@media (min-width: 1440px) {
-  .container {
-    max-width: 1320px;
-  }
-}
-
 /* phones and small tablets */
 @media (max-width: 560px) {
   .container {
-    padding: 0 14px;
+    padding: 0 12px;
   }
 
   .section {
-    padding: 36px 14px;
+    padding: 40px 0;
   }
 
   .product-grid {
@@ -2205,13 +2590,12 @@ body {
 
 /* keep the header tidy on mid-size screens */
 @media (max-width: 640px) {
-  .logo {
-    font-size: 1.5rem;
+  .logo-img {
+    height: 32px;
   }
 
-  .logo-mark {
-    width: 32px;
-    height: 32px;
+  .footer-logo .logo-img {
+    height: 30px;
   }
 }
 
@@ -2422,11 +2806,9 @@ label {
 .logo {
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.logo-mark {
+.logo-img {
   flex: 0 0 auto;
 }
 
@@ -2576,11 +2958,13 @@ label {
 }
 
 .hero-overlay {
+  /* light gradient so the product photo reads like the original site's
+     bright full-width banners, while the copy stays legible */
   background: linear-gradient(
     90deg,
-    rgba(20, 12, 18, 0.72) 0%,
-    rgba(20, 12, 18, 0.45) 55%,
-    rgba(20, 12, 18, 0.22) 100%
+    rgba(20, 12, 18, 0.5) 0%,
+    rgba(20, 12, 18, 0.28) 45%,
+    rgba(20, 12, 18, 0.06) 100%
   );
 }
 

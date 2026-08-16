@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { products, getCategory } from '../data/catalog';
+import { products, getCategory, uniqueProducts } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../components/Pagination';
 import { SORT_OPTIONS, type SortKey } from '../data/sort';
@@ -15,15 +15,12 @@ export default function SearchPage() {
 
   const results = useMemo(() => {
     if (!q) return [];
-    const seen = new Set<string>();
-    const list = products.filter((p) => {
-      if (seen.has(p.slug)) return false;
-      const matches =
+    const matched = products.filter(
+      (p) =>
         p.name.toLowerCase().includes(q) ||
-        (getCategory(p.category)?.name || '').toLowerCase().includes(q);
-      if (matches) seen.add(p.slug);
-      return matches;
-    });
+        (getCategory(p.category)?.name || '').toLowerCase().includes(q)
+    );
+    const list = uniqueProducts(matched);
     switch (sort) {
       case 'alphaasc':
         return list.sort((a, b) => a.name.localeCompare(b.name));

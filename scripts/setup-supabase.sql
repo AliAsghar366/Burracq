@@ -1,5 +1,5 @@
 -- ============================================================
--- BURRACQ — Supabase setup for the admin panel & analytics
+-- BURACQ — Supabase setup for the admin panel & analytics
 -- Run this in the Supabase dashboard: SQL Editor → New query → Run.
 -- ============================================================
 

@@ -10,8 +10,18 @@ export default function Header() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [stuck, setStuck] = useState(false);
   const closeTimer = useRef<number | undefined>(undefined);
   const navRef = useRef<HTMLDivElement>(null);
+
+  // Slim the header down after the page starts scrolling (desktop), matching
+  // the original site's sticky header behaviour.
+  useEffect(() => {
+    const onScroll = () => setStuck(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Close the dropdown whenever we navigate.
   useEffect(() => {
@@ -76,7 +86,7 @@ export default function Header() {
   };
 
   return (
-    <header className="site-header">
+    <header className={`site-header${stuck ? ' is-stuck' : ''}`}>
       <div className="header-main container">
         <div className="header-left">
           {/* mobile hamburger (ilovehana-style drawer) */}
@@ -90,9 +100,8 @@ export default function Header() {
             <span className="mobile-menu-toggleIcon" aria-hidden="true" />
           </button>
 
-          <Link to="/" className="logo" aria-label="BURRACQ home">
-            <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-            <span>BURRACQ</span>
+          <Link to="/" className="logo" aria-label="BURACQ home">
+            <img src="/logo.png" className="logo-img" alt="BURACQ" />
           </Link>
         </div>
 

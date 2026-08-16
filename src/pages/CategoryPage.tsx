@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
-import { categories, productsByCategory, getCategory } from '../data/catalog';
+import { categories, productsByCategory, getCategory, uniqueProducts } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../components/Pagination';
 import { SORT_OPTIONS, type SortKey } from '../data/sort';
@@ -15,7 +15,7 @@ export default function CategoryPage() {
   const category = getCategory(slug) ?? categories[0];
 
   const products = useMemo(() => {
-    const list = [...productsByCategory(category.slug)];
+    const list = uniqueProducts(productsByCategory(category.slug));
     switch (sort) {
       case 'alphaasc':
         return list.sort((a, b) => a.name.localeCompare(b.name));

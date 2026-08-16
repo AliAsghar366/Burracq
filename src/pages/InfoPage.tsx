@@ -13,7 +13,7 @@ export interface InfoContent {
 export const ABOUT_CONTENT: InfoContent = {
   title: 'About Us',
   intro:
-    'BURRACQ is an independent online store for fashion, accessories and everyday finds. We bring together fresh styles — hats, bags, accessories, apparel and more — in one easy place, at prices you\u2019ll love.',
+    'BURACQ is an independent online store for fashion, accessories and everyday finds. We bring together fresh styles — hats, bags, accessories, apparel and more — in one easy place, at prices you\u2019ll love.',
   sections: [
     {
       heading: 'What we\u2019re about',
@@ -30,7 +30,7 @@ export const ABOUT_CONTENT: InfoContent = {
     {
       heading: 'Every item, sold individually',
       paragraphs: [
-        'Everything on BURRACQ is sold as a single unit — no case packs, no minimum quantities. You pick the pieces you want and the quantity you need, and we take care of the rest.',
+        'Everything on BURACQ is sold as a single unit — no case packs, no minimum quantities. You pick the pieces you want and the quantity you need, and we take care of the rest.',
       ],
     },
     {
@@ -179,7 +179,7 @@ export const TERMS_CONTENT: InfoContent = {
     {
       heading: 'Limitation of liability',
       paragraphs: [
-        'To the fullest extent permitted by law, BURRACQ\u2019s liability is limited to the amount you paid for the affected order.',
+        'To the fullest extent permitted by law, BURACQ\u2019s liability is limited to the amount you paid for the affected order.',
       ],
     },
     {
@@ -218,7 +218,7 @@ export const FAQ_CONTENT: InfoContent = {
     {
       heading: 'Are items sold individually?',
       paragraphs: [
-        'Yes. Every item on BURRACQ is sold as a single unit — just pick the quantity you want at checkout.',
+        'Yes. Every item on BURACQ is sold as a single unit — just pick the quantity you want at checkout.',
       ],
     },
     {
