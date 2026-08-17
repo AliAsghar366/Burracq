@@ -39,6 +39,15 @@ function AccordionSection({
   );
 }
 
+// A selectable variation of the product: an image plus its label.
+type View = {
+  key: string;
+  src: string;
+  label: string;
+  color?: string;
+  slug?: string;
+};
+
 export default function ProductPage() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
@@ -46,7 +55,7 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [openSection, setOpenSection] = useState<string>('details');
-  const [selectedSlug, setSelectedSlug] = useState(slug);
+  const [viewIdx, setViewIdx] = useState(0);
 
   const product = getProduct(slug);
 
@@ -64,18 +73,35 @@ export default function ProductPage() {
   const category = getCategory(product.category);
   const variants = variantsFor(product);
 
-  // The variation currently being viewed. Clicking a swatch/thumbnail swaps
-  // the main image in place; the picked variation is what gets added to cart.
-  const selected: Product = (() => {
-    if (selectedSlug === product.slug) return product;
-    const v = variants.find((x) => x.slug === selectedSlug);
-    if (v) {
-      const p = getProduct(v.slug);
-      if (p) return p;
-    }
-    return product;
-  })();
-  const selectedName = selectedSlug === product.slug ? '' : variantNameOf(selected);
+  // The variations shown INSIDE the product view. When ilovehana.com provided
+  // a per-color image gallery for this product (same CDN), use it — each view
+  // is one color with its own photo. Otherwise fall back to the catalog's
+  // image-based colorways (each a separate page that shares the supplier code).
+  const gallery = product.gallery && product.gallery.length > 1 ? product.gallery : null;
+  const views: View[] = gallery
+    ? gallery.map((g) => ({
+        key: g.src,
+        src: g.src,
+        label: g.color || 'View',
+        color: g.color,
+        slug: product.slug,
+      }))
+    : variants.map((v) => ({
+        key: v.slug,
+        src: v.image,
+        label: v.name,
+        slug: v.slug,
+      }));
+
+  const view = views[Math.min(viewIdx, views.length - 1)] || views[0];
+  const selectedProduct: Product =
+    view.slug && view.slug !== product.slug ? getProduct(view.slug) || product : product;
+  const selectedName = view.color
+    ? view.color
+    : view.slug && view.slug !== product.slug
+      ? variantNameOf(selectedProduct)
+      : '';
+
   const related = uniqueProducts(productsByCategory(product.category))
     .filter((p) => p.slug !== product.slug)
     .slice(0, 4);
@@ -83,10 +109,10 @@ export default function ProductPage() {
   const handleAdd = () => {
     addToCart(
       {
-        slug: selected.slug,
-        name: selectedName ? `${selected.name} — ${selectedName}` : selected.name,
-        price: selected.price,
-        image: selected.image,
+        slug: selectedProduct.slug,
+        name: selectedName ? `${selectedProduct.name} — ${selectedName}` : selectedProduct.name,
+        price: selectedProduct.price,
+        image: selectedProduct.image,
       },
       qty
     );
@@ -97,10 +123,10 @@ export default function ProductPage() {
   const handleBuyNow = () => {
     addToCart(
       {
-        slug: selected.slug,
-        name: selectedName ? `${selected.name} — ${selectedName}` : selected.name,
-        price: selected.price,
-        image: selected.image,
+        slug: selectedProduct.slug,
+        name: selectedName ? `${selectedProduct.name} — ${selectedName}` : selectedProduct.name,
+        price: selectedProduct.price,
+        image: selectedProduct.image,
       },
       qty
     );
@@ -109,9 +135,14 @@ export default function ProductPage() {
 
   const toggle = (key: string) => setOpenSection((cur) => (cur === key ? '' : key));
 
-  const selectVariant = (vSlug: string) => {
-    setSelectedSlug(vSlug);
+  const selectView = (i: number) => {
+    setViewIdx(i);
     setAdded(false);
+  };
+
+  const selectColorChip = (color: string) => {
+    const i = views.findIndex((v) => v.color === color);
+    if (i >= 0) selectView(i);
   };
 
   return (
@@ -127,30 +158,30 @@ export default function ProductPage() {
       <div className="product-view">
         <div className="product-media">
           <img
-            key={selected.slug}
-            src={fullImageOf(selected.image)}
-            alt={selectedName ? `${product.name} — ${selectedName}` : product.name}
+            key={view.key}
+            src={fullImageOf(view.src)}
+            alt={view.label && view.label !== 'View' ? `${product.name} — ${view.label}` : product.name}
             loading="eager"
             decoding="async"
             onError={(e) => {
               if (e.currentTarget.src !== PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
             }}
           />
-          {variants.length > 1 && (
+          {views.length > 1 && (
             <div className="product-thumbs" aria-label="All variations">
-              {variants.map((v) => (
+              {views.map((v, i) => (
                 <button
-                  key={v.slug}
+                  key={v.key}
                   type="button"
-                  className={`product-thumb${v.slug === selected.slug ? ' is-active' : ''}`}
-                  title={v.name}
-                  aria-label={`View ${v.name}`}
-                  aria-pressed={v.slug === selected.slug}
-                  onClick={() => selectVariant(v.slug)}
+                  className={`product-thumb${i === viewIdx ? ' is-active' : ''}`}
+                  title={v.label}
+                  aria-label={`View ${v.label}`}
+                  aria-pressed={i === viewIdx}
+                  onClick={() => selectView(i)}
                 >
                   <img
-                    src={fullImageOf(v.image)}
-                    alt={v.name}
+                    src={fullImageOf(v.src)}
+                    alt={v.label}
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
@@ -166,40 +197,40 @@ export default function ProductPage() {
           <h1>{product.name}</h1>
           {product.sku && <p className="product-sku">Style #{product.sku}</p>}
           <p className="product-price">
-            {selected.compareAtPrice != null && (
+            {selectedProduct.compareAtPrice != null && (
               <s
                 className="price-compare"
-                aria-label={`Was $${selected.compareAtPrice.toFixed(2)}`}
+                aria-label={`Was $${selectedProduct.compareAtPrice.toFixed(2)}`}
               >
-                ${selected.compareAtPrice.toFixed(2)}
+                ${selectedProduct.compareAtPrice.toFixed(2)}
               </s>
             )}
-            <span className="price-now">${selected.price.toFixed(2)}</span>
+            <span className="price-now">${selectedProduct.price.toFixed(2)}</span>
           </p>
           <p className="product-price-note">
             Free U.S. shipping on orders over $100 • Easy 30-day returns
           </p>
 
-          {variants.length > 1 && (
+          {views.length > 1 && (
             <div className="variant-picker">
               <div className="variant-picker-label">
-                <span>Color:</span>
-                <strong>{selectedName || variantNameOf(product)}</strong>
+                <span>{gallery ? 'Color:' : 'Style:'}</span>
+                <strong>{selectedName || view.label || 'One Size'}</strong>
               </div>
-              <div className="variant-swatches" role="listbox" aria-label="Color">
-                {variants.map((v) => (
+              <div className="variant-swatches" role="listbox" aria-label="Variations">
+                {views.map((v, i) => (
                   <button
-                    key={v.slug}
+                    key={v.key}
                     type="button"
                     role="option"
-                    aria-selected={v.slug === selected.slug}
-                    className={`variant-swatch${v.slug === selected.slug ? ' is-active' : ''}`}
-                    title={v.name}
-                    onClick={() => selectVariant(v.slug)}
+                    aria-selected={i === viewIdx}
+                    className={`variant-swatch${i === viewIdx ? ' is-active' : ''}`}
+                    title={v.label}
+                    onClick={() => selectView(i)}
                   >
                     <img
-                      src={fullImageOf(v.image)}
-                      alt={v.name}
+                      src={fullImageOf(v.src)}
+                      alt={v.label}
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
@@ -209,6 +240,27 @@ export default function ProductPage() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {product.colors && product.colors.length > 0 && (
+            <div className="color-list">
+              <div className="variant-picker-label">
+                <span>Available in:</span>
+              </div>
+              <ul className="color-chips" aria-label="Available colors">
+                {product.colors.map((c) => (
+                  <li key={c}>
+                    <button
+                      type="button"
+                      className={`color-chip${views.some((v) => v.color === c) ? ' is-selectable' : ''}`}
+                      onClick={() => selectColorChip(c)}
+                    >
+                      {c}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

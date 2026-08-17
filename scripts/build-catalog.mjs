@@ -428,14 +428,82 @@ const SIZED_CATEGORIES = new Set([
   'accessory', 'intimate-accessory', 'cc-accessories', 'beach-towel',
 ]);
 
-function buildDescription(name, category) {
+function buildDescription(name, category, colors) {
   const lines = [
     name,
     DESCRIPTION_OPENERS[category] || 'A fresh, everyday find — easy to wear, easy to love.',
   ];
   if (!SIZED_CATEGORIES.has(category)) lines.push('One size fits most.');
-  lines.push('Available in assorted colors and styles.');
+  // When ilovehana.com lists the color options for this product, spell them
+  // out in the description; otherwise keep the generic fallback.
+  lines.push(
+    colors && colors.length
+      ? `Available in: ${colors.join(', ')}.`
+      : 'Available in assorted colors and styles.'
+  );
   return lines.join('<br/>');
+}
+
+// ---- ilovehana.com color variations ---------------------------------------
+// scripts/hana-crawl.mjs scrapes the color option lists from ilovehana.com's
+// product pages (the "color:" picker). Our catalog crawl carried each product's
+// ilovehana.com URL, so matching on that URL folds the scraped colors in.
+let hanaVariations = {};
+try {
+  hanaVariations = JSON.parse(readFileSync('scripts/data/hana-variations.json', 'utf8'));
+} catch {
+  // not crawled yet — colors stay undefined
+}
+
+const hanaByUrl = new Map();
+for (const [url, v] of Object.entries(hanaVariations)) {
+  const colors = (v.colors || [])
+    .map((c) => c.trim())
+    .filter((c) => c && !/^(assorted|one ?size|mixed|multicolor|multi|random)$/i.test(c));
+  const gallery = (v.gallery || []).filter((u) => u && u.startsWith('http'));
+  if (colors.length || gallery.length) {
+    hanaByUrl.set(url.replace(/\/+$/, ''), {
+      colors: [...new Set(colors)],
+      gallery: [...new Set(gallery)],
+    });
+  }
+}
+
+// Match a CDN image filename to a color from the option list. Filenames embed
+// the color (e.g. JS2416-DARKGRAY-1, JS2416-LIGHTPINK) — match the longest
+// color first so "Pink" doesn't steal a "Light Pink" image.
+function matchColorToImage(filename, colors) {
+  if (!colors || !colors.length) return undefined;
+  const norm = filename.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const sorted = [...colors].sort((a, b) => b.length - a.length);
+  for (const c of sorted) {
+    const cn = c.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (cn.length >= 3 && norm.includes(cn)) return c;
+  }
+  return undefined;
+}
+
+// Per-color gallery for a product: the main image first (labeled with its
+// color), then one image per color, then any remaining shots as extra views.
+function buildGallery(image, galleryUrls, colors) {
+  if (!galleryUrls || galleryUrls.length < 2) return undefined;
+  const mainColor = matchColorToImage(image, colors);
+  const out = [{ src: image, ...(mainColor ? { color: mainColor } : {}) }];
+  const seen = new Set(mainColor ? [mainColor] : []);
+  for (const u of galleryUrls) {
+    if (u === image) continue;
+    const c = matchColorToImage(u, colors);
+    if (c) {
+      if (seen.has(c)) continue;
+      seen.add(c);
+      out.push({ src: u, color: c });
+    }
+  }
+  for (const u of galleryUrls) {
+    if (u === image) continue;
+    if (!matchColorToImage(u, colors)) out.push({ src: u });
+  }
+  return out.length > 1 ? out : undefined;
 }
 
 // ---- build product list ---------------------------------------------------
@@ -462,6 +530,8 @@ const products = rawProducts.map((p, i) => {
     name = NAME_FALLBACKS[p.category] || 'Everyday Style';
   }
   const { price, compareAtPrice } = retailPriceFor(wholesale, packSize);
+  const hana = hanaByUrl.get((p.url || '').replace(/\/+$/, ''));
+  const colors = hana ? hana.colors : undefined;
   return {
     slug: p.slug,
     name,
@@ -471,7 +541,11 @@ const products = rawProducts.map((p, i) => {
     price,
     compareAtPrice,
     image: p.image,
-    description: buildDescription(name, p.category),
+    description: buildDescription(name, p.category, colors),
+    ...(colors && colors.length ? { colors } : {}),
+    ...(hana && hana.gallery.length
+      ? { gallery: buildGallery(p.image, hana.gallery, colors) }
+      : {}),
   };
 });
 
@@ -545,6 +619,11 @@ export interface Category {
   image: string;
 }
 
+export interface GalleryImage {
+  src: string;
+  color?: string;
+}
+
 export interface Product {
   slug: string;
   name: string;
@@ -555,6 +634,13 @@ export interface Product {
   compareAtPrice: number | null;
   image: string;
   description: string;
+  // Color options scraped from ilovehana.com's product pages (the "color:"
+  // picker). Present only for products whose supplier code was found there.
+  colors?: string[];
+  // Per-color image gallery scraped from ilovehana.com (same CDN). The first
+  // entry is the main image; each color has one labeled image; extra shots
+  // follow as unlabeled views.
+  gallery?: GalleryImage[];
 }
 
 export interface ProductVariant {

@@ -947,6 +947,56 @@ img {
   object-fit: cover;
 }
 
+/* color options scraped from ilovehana.com (the "color:" picker values) */
+.color-list {
+  margin-bottom: 20px;
+}
+
+.color-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.color-chips li {
+  margin: 0;
+}
+
+.color-chip {
+  display: inline-block;
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-transform: capitalize;
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* chips that link to a matching photo in the gallery become tappable */
+.color-chip.is-selectable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.color-chip.is-selectable:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(223, 0, 114, 0.04);
+}
+
+.color-chip.is-selectable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* thumbnail gallery of every variation inside the media column */
 .product-thumbs {
   display: flex;

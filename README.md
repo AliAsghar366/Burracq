@@ -28,6 +28,13 @@ The store is built from a crawled snapshot of the supplier's catalog
   with color/style variations. Product pages show a color picker (swatches
   link to each variant's page) and grids dedupe so each product appears once
   with a swatch row on its card.
+- **ilovehana.com color variations** — `scripts/hana-crawl.mjs` scrapes the
+  "color:" option list AND the per-color image gallery from ilovehana.com's
+  product pages (matched to our catalog by the ilovehana URL each product was
+  crawled from). Product pages render the variations inside the product view:
+  a thumbnail strip under the main image (one photo per color, swapping the
+  main image in place) plus an "Available in:" chip row that jumps to the
+  matching photo, and the color names are spelled out in the description.
 - **Fast-loading images** — grid cards request a smaller CDN stencil size
   (450×450) instead of the full 900×900 image, and a bundled placeholder
   renders if any image ever fails to load.
@@ -56,6 +63,8 @@ Re-crawling the supplier site is optional and rate-limited:
 ```bash
 node scripts/crawl.mjs           # refreshes scripts/data/crawled-*.json
 node scripts/fetch-prices.mjs    # refreshes wholesale prices
+node scripts/hana-crawl.mjs enumerate   # walks ilovehana.com category pages
+node scripts/hana-crawl.mjs fetch       # fetches product pages -> scripts/data/hana-variations.json
 ```
 
 ## Admin panel (/admin)
