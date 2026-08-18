@@ -16,6 +16,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 const CATEGORIES_JSON = 'scripts/data/crawled-categories.json';
 const PRODUCTS_JSON = 'scripts/data/crawled-products.json';
 const HOME_GRIDS_JSON = 'scripts/data/home-grids.json';
+const HANA_VARIATIONS_JSON = 'scripts/data/hana-variations.json';
 
 const categories = JSON.parse(readFileSync(CATEGORIES_JSON, 'utf8'));
 // Drop products sold as multi-pair packs (e.g. "(6 pairs)", "(12pairs)").
@@ -32,6 +33,18 @@ try {
   realPrices = JSON.parse(readFileSync('scripts/data/crawled-prices.json', 'utf8'));
 } catch {
   // price file not built yet
+}
+
+// Per-product variations (colors + image galleries) crawled from the
+// supplier's product pages (scripts/hana-crawl.mjs). Map of product URL ->
+// { colors: string[], gallery: string[], title }. The gallery filenames
+// usually contain the color token (e.g. "DJE310806-GOLD"), so each color can
+// be paired with its own photo.
+let hanaVariations = {};
+try {
+  hanaVariations = JSON.parse(readFileSync(HANA_VARIATIONS_JSON, 'utf8'));
+} catch {
+  // variations file not built yet
 }
 
 // ---- retail pricing -------------------------------------------------------
@@ -500,6 +513,7 @@ const products = rawProducts.map((p, i) => {
   const colorLabel = colorTailOf(p.name, sku);
   return {
     slug: p.slug,
+    url: p.url,
     name,
     sku,
     packSize,
@@ -535,9 +549,43 @@ function variantsFor(p) {
   return out;
 }
 
+/** Find the gallery image whose filename contains the color label. */
+function colorImageOf(gallery, colorLabel) {
+  const norm = colorLabel.toUpperCase().replace(/[\s\-–—_.]/g, '');
+  if (norm.length < 3) return '';
+  for (const img of gallery) {
+    const file = decodeURIComponent(img.split('/').pop() || '')
+      .toUpperCase()
+      .replace(/[\s\-–—_.]/g, '');
+    if (file.includes(norm)) return img;
+  }
+  return '';
+}
+
 for (const p of products) {
-  p.variants = variantsFor(p);
+  const variants = variantsFor(p);
+  const seenLabels = new Set(variants.map((v) => v.label.toLowerCase()));
+  // Add the supplier's per-product color options (each color is an
+  // in-page variant on this same product, with its own gallery photo).
+  const hana = hanaVariations[p.url];
+  if (hana && Array.isArray(hana.colors) && hana.colors.length > 0) {
+    const gallery = hana.gallery || [];
+    for (const color of hana.colors) {
+      const label = String(color).trim();
+      if (!label) continue;
+      const key = label.toLowerCase();
+      if (seenLabels.has(key)) continue;
+      seenLabels.add(key);
+      variants.push({
+        label,
+        image: colorImageOf(gallery, label) || p.image,
+        slug: p.slug, // same product — the image is swapped in place
+      });
+    }
+  }
+  p.variants = variants;
   delete p.colorLabel;
+  delete p.url; // internal only — not part of the public Product type
 }
 
 const enrichedCategories = categories.map((c) => {

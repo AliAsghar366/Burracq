@@ -11,9 +11,9 @@ export default function PromoCollage() {
   const bag = getCategory('bag');
   const women = getCategory('women');
   const accessory = getCategory('accessory');
-  // Trucker cap photo for the typography panel (ilovehana-style inset).
-  const caps = getCategory('baseball-cap');
-  const truckerImage = caps?.image || hats?.image || '';
+  // Beanie photo for the typography panel (ilovehana-style inset).
+  const beanies = getCategory('beanie');
+  const beanieImage = beanies?.image || hats?.image || '';
 
   return (
     <section className="container section promo-collage" aria-label="Featured categories">
@@ -26,21 +26,19 @@ export default function PromoCollage() {
         <div className="collage-text-copy">
           <p className="collage-eyebrow">New in</p>
           <h2>
-            Letter
+            Cozy
             <br />
-            Trucker
-            <br />
-            Caps
+            Beanies
           </h2>
-          <p className="collage-sub">Two-tone styles with embroidered lettering.</p>
-          <Link to="/category/baseball-cap" className="collage-cta">
-            Shop Caps
+          <p className="collage-sub">Soft, warm styles for every day.</p>
+          <Link to="/category/beanie" className="collage-cta">
+            Shop Beanies
           </Link>
         </div>
         <img
           className="collage-inset"
-          src={truckerImage}
-          alt="Trucker cap styles"
+          src={beanieImage}
+          alt="Beanie styles"
           loading="lazy"
         />
       </div>

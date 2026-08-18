@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getProduct, getCategory, productsByCategory } from '../data/catalog';
+import { getProduct, getCategory, productsByCategory, type ProductVariant } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
@@ -37,12 +37,16 @@ export default function ProductPage() {
   const [openSection, setOpenSection] = useState<string>('details');
   // The active (selected) variant — the page swaps its image/price in place.
   const [activeSlug, setActiveSlug] = useState(slug);
+  // The exact color option picked (same-product color variants swap only
+  // the image; sibling-product variants also swap the price/name).
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const baseProduct = getProduct(slug);
 
   // Reset to the URL product when navigating between product pages.
   useEffect(() => {
     setActiveSlug(slug);
+    setSelectedVariant(null);
     setQty(1);
     setAdded(false);
   }, [slug]);
@@ -67,22 +71,25 @@ export default function ProductPage() {
 
   const variants = baseProduct.variants || [];
   const currentVariant = variants.find((v) => v.slug === product.slug);
-  const variantLabel = currentVariant?.label || variants[0]?.label || '';
+  const variantLabel =
+    selectedVariant?.label || currentVariant?.label || variants[0]?.label || '';
+  // A picked color option can carry its own photo (same-product variant).
+  const displayImage = selectedVariant?.image || product.image;
 
-  const handleSelectVariant = (vSlug: string) => {
-    if (vSlug === product.slug) return;
-    setActiveSlug(vSlug);
+  const handleSelectVariant = (v: ProductVariant) => {
+    setSelectedVariant(v);
+    setActiveSlug(v.slug);
     setAdded(false);
   };
 
   const handleAdd = () => {
-    addToCart(product, qty);
+    addToCart({ ...product, image: displayImage }, qty);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, qty);
+    addToCart({ ...product, image: displayImage }, qty);
     navigate('/cart');
   };
 
@@ -101,8 +108,8 @@ export default function ProductPage() {
       <div className="product-view">
         <div className="product-media">
           <img
-            key={product.slug}
-            src={product.image}
+            key={`${product.slug}-${variantLabel}`}
+            src={displayImage}
             alt={product.name}
             className="product-main-img"
           />
@@ -133,16 +140,18 @@ export default function ProductPage() {
               </span>
               <div className="swatches" role="group" aria-label="Choose color or style">
                 {variants.map((v) => {
-                  const selected = v.slug === product.slug;
+                  const selected = selectedVariant
+                    ? v.slug === selectedVariant.slug && v.label === selectedVariant.label
+                    : v.slug === product.slug;
                   return (
                     <button
-                      key={v.slug}
+                      key={`${v.slug}-${v.label}`}
                       type="button"
                       className={`swatch${selected ? ' selected' : ''}`}
                       title={v.label}
                       aria-label={`${v.label}${selected ? ' (selected)' : ''}`}
                       aria-pressed={selected}
-                      onClick={() => handleSelectVariant(v.slug)}
+                      onClick={() => handleSelectVariant(v)}
                     >
                       <img src={v.image} alt={v.label} loading="lazy" />
                     </button>
