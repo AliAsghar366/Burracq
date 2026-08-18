@@ -598,6 +598,10 @@ function colorFromFilename(image) {
   return '';
 }
 
+// Pass 1: compute variants for every product. This reads each sibling's
+// colorLabel, so the internal fields must NOT be deleted until every
+// product's variants have been built (deleting mid-loop made later
+// duplicate entries of the same SKU lose their siblings' variants).
 for (const p of products) {
   const variants = variantsFor(p);
   const seenLabels = new Set(variants.map((v) => v.label.toLowerCase()));
@@ -630,8 +634,12 @@ for (const p of products) {
     });
   }
   p.variants = variants;
+}
+
+// Pass 2: strip internal-only fields now that all variants are computed.
+for (const p of products) {
   delete p.colorLabel;
-  delete p.url; // internal only — not part of the public Product type
+  delete p.url;
 }
 
 const enrichedCategories = categories.map((c) => {
