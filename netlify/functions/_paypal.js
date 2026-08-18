@@ -3,8 +3,8 @@
 // the browser bundle. The public client ID may be exposed; the secret must
 // only ever live in the Netlify environment / local .env.
 
-const ENV = 'live';
-const API_BASE = 'https://api-m.paypal.com';
+const ENV = 'sandbox';
+const API_BASE = 'https://api-m.sandbox.paypal.com';
 
 let tokenCache = { token: null, expiresAt: 0 };
 
