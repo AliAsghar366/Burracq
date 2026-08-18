@@ -562,6 +562,42 @@ function colorImageOf(gallery, colorLabel) {
   return '';
 }
 
+// Color/style tokens used in supplier image filenames (e.g. "JCL6287-BEIGE-1",
+// "68849M-RED-01"). Used to give single-color products a real color swatch.
+const FILENAME_COLORS = new Set([
+  'BLACK', 'WHITE', 'GRAY', 'GREY', 'BROWN', 'BEIGE', 'CREAM', 'PINK', 'ROSE',
+  'RED', 'MAROON', 'BURGUNDY', 'NAVY', 'BLUE', 'SKY', 'TEAL', 'GREEN', 'OLIVE',
+  'PURPLE', 'LAVENDER', 'LILAC', 'YELLOW', 'GOLD', 'ORANGE', 'KHAKI', 'TAN',
+  'CAMEL', 'CHARCOAL', 'HEATHER', 'NATURAL', 'IVORY', 'MUSTARD', 'COBALT',
+  'CORAL', 'FUCHSIA', 'MINT', 'SAGE', 'SLATE', 'WINE', 'MAUVE', 'PEACH',
+  'SILVER', 'TURQUOISE', 'AQUA', 'RUST', 'BRICK', 'BLUSH', 'COGNAC', 'MOCHA',
+  'TAUPE', 'CHOCOLATE', 'COFFEE', 'ESPRESSO', 'CARAMEL', 'OATMEAL', 'LINEN',
+  'SAND', 'BONE', 'ECRU', 'CHAMPAGNE', 'COPPER', 'BRONZE', 'DENIM', 'PLAID',
+  'STRIPE', 'FLORAL', 'LEOPARD', 'CAMO', 'MULTI', 'ASSORTED', 'MIX', 'MIXED',
+]);
+
+function titleLabel(s) {
+  return s.charAt(0) + s.slice(1).toLowerCase();
+}
+
+/** Extract a color token from an image filename, e.g. "JCL6287-BEIGE-1" -> Beige. */
+function colorFromFilename(image) {
+  if (!image) return '';
+  const file = decodeURIComponent(image.split('/').pop() || '')
+    .split('?')[0]
+    .replace(/\.[a-z]+$/i, '')
+    .toUpperCase();
+  const tokens = file.split(/[-_ ]+/);
+  for (const t of tokens) {
+    if (FILENAME_COLORS.has(t)) return titleLabel(t);
+  }
+  for (let i = 0; i < tokens.length - 1; i++) {
+    const combo = `${tokens[i]}-${tokens[i + 1]}`;
+    if (FILENAME_COLORS.has(combo)) return titleLabel(combo);
+  }
+  return '';
+}
+
 for (const p of products) {
   const variants = variantsFor(p);
   const seenLabels = new Set(variants.map((v) => v.label.toLowerCase()));
@@ -582,6 +618,16 @@ for (const p of products) {
         slug: p.slug, // same product — the image is swapped in place
       });
     }
+  }
+  // Products with no color data still get a swatch so every product page
+  // shows a color selector: derive the color from the image filename when
+  // possible, otherwise a neutral "One Color" label.
+  if (variants.length === 0) {
+    variants.push({
+      label: colorFromFilename(p.image) || 'One Color',
+      image: p.image,
+      slug: p.slug,
+    });
   }
   p.variants = variants;
   delete p.colorLabel;
