@@ -1,6 +1,6 @@
-# BURRACQ — Fashion, Accessories & Everyday Finds
+# BURACQ — Fashion, Accessories & Everyday Finds
 
-A customer-facing retail e-commerce storefront (React + TypeScript + Vite). BURRACQ
+A customer-facing retail e-commerce storefront (React + TypeScript + Vite). BURACQ
 sells individual products — hats, bags, accessories, apparel and more — at retail
 prices, with the supplier (HANA / ilovehana.com) kept behind the scenes.
 
@@ -71,14 +71,53 @@ adds the `status` column to `orders`, creates `order_status_log` and
 > 3. Move sensitive reads behind a server endpoint (Supabase Edge Function)
 >    using the service-role key instead of the anon key.
 
+## PayPal checkout
+
+The cart offers PayPal as an online payment option. Architecture:
+
+- **Browser** — the PayPal JS SDK (loaded with the *public* client ID) renders
+  the buttons on the cart page (`src/components/PayPalButton.tsx`,
+  `src/lib/paypal.ts`). The browser never sees the secret.
+- **Server** — two Netlify Functions create and capture the order with the
+  PayPal REST API (`netlify/functions/create-paypal-order.js`,
+  `netlify/functions/capture-paypal-order.js`). These hold the secret.
+
+### Environment variables
+
+| Variable | Used by | Notes |
+| --- | --- | --- |
+| `VITE_PAYPAL_CLIENT_ID` | Browser | Public client ID; enables the PayPal button. Inlined at build time. |
+| `VITE_PAYPAL_ENV` | Browser | `live` or `sandbox` (default `live`). |
+| `PAYPAL_CLIENT_ID` | Functions | Server-side client ID. |
+| `PAYPAL_CLIENT_SECRET` | Functions | **Secret — never expose to the browser or commit to git.** |
+| `PAYPAL_ENV` | Functions | `live` or `sandbox` (default `live`). |
+
+**Local development:** copy `.env.example` to `.env` and fill in the keys (the
+`.env` file is git-ignored). Vite picks up the `VITE_*` values automatically;
+the functions read `PAYPAL_*` at runtime. `npm run dev` serves the Netlify
+Functions locally too (see `vite.config.ts`), so PayPal checkout works in
+plain dev — no `netlify dev` needed. You can also use `netlify dev` if you
+prefer the official emulator.
+
+**Netlify (production):** in the Netlify dashboard go to **Site settings →
+Environment variables** and add the same five variables (the client will
+supply the real keys). No code changes needed — the build inlines
+`VITE_*` and the functions read `PAYPAL_*` at runtime. The values are
+**not** committed to the repo, so they must be added there.
+
+**Testing:** use PayPal sandbox credentials with `PAYPAL_ENV=sandbox` /
+`VITE_PAYPAL_ENV=sandbox` before going live. The keys currently in `.env`
+are **live** credentials — real money moves when a payment is approved.
+
 ## Notes for launch
 
 - Product images come from the supplier's CDN — confirm you have permission to
   reuse them before launch.
 - `INBOUND_FACTOR` is a rough assumption; replace it with your real inbound
   shipping cost per item for accurate landed cost.
-- Orders are confirmed by phone/email; no online payment gateway is wired up
-  yet (see `src/lib/supabase.ts` for best-effort order sync and the Stripe
-  TODO in `src/context/CartContext.tsx`).
+- Orders are confirmed by phone/email; payment is taken via PayPal (see above)
+  or **Cash on Delivery** — the cart asks the customer to pick a payment method
+  at checkout. Order data syncs best-effort to Supabase (`src/lib/supabase.ts`),
+  including the chosen `payment_method`.
 - The contact form opens the visitor's email app (`mailto:`); swap in a real
   support email before launch.

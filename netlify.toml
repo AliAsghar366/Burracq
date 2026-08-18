@@ -4,3 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Serverless functions used by PayPal checkout (create + capture orders).
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

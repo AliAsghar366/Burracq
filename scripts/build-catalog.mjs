@@ -194,6 +194,41 @@ function retailNameOf(raw, sku) {
   return toTitleCase(n);
 }
 
+// ---- color variants -------------------------------------------------------
+// The supplier lists each color as its own product, named like
+// "RIBBED SOLID BEANIE-JH272-GRAY" (description + code + color). We group
+// products that share the same SKU so the product page can offer a color
+// swatch for every variant, each loading its own image.
+const JUNK_TAILS = new Set([
+  'ASSORTED', 'COLOR', 'MAIN', 'MODEL', 'IMAGE', 'FRONT', 'BACK', 'SIDE', 'VIEW',
+  'KIDS', 'POM', 'BACKGROUND', 'NEW', 'HOT', 'SALE', 'ONE', 'SIZE', 'FREE',
+  'BULK', 'MIX', 'MIXED', 'LOT', 'PACK', 'STYLE', 'WHOLESALE',
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'M', 'S', 'L', 'X', 'XL', 'XS',
+  'XXL', 'XXXL', 'W', 'K', 'T', 'U', 'V', 'Y', 'Z',
+]);
+
+/**
+ * Extract the color/style label that follows the SKU in the raw supplier
+ * name (e.g. "-GRAY" in "RIBBED SOLID BEANIE-JH272-GRAY"). Returns null
+ * when the tail is a size, pack marker, or otherwise not a real label.
+ */
+function colorTailOf(rawName, sku) {
+  if (!sku) return null;
+  const idx = rawName.lastIndexOf(sku);
+  if (idx < 0) return null;
+  let tail = rawName
+    .slice(idx + sku.length)
+    .replace(PACK_RE, '')
+    .replace(/^[\s\-–—_:.]+/, '')
+    .replace(/[\s\-–—_:.]+$/, '')
+    .replace(/-(MODEL|MAIN|IMAGE|PRODUCT|FRONT|BACK|SIDE|VIEW|ALT)\d*$/i, '')
+    .trim();
+  tail = tail.toUpperCase();
+  if (!/^[A-Z]{2,}$/.test(tail)) return null;
+  if (JUNK_TAILS.has(tail)) return null;
+  return tail.charAt(0) + tail.slice(1).toLowerCase();
+}
+
 // Names that are only supplier codes fall back to a generic retail name.
 const NAME_FALLBACKS = {
   'headband-dz': 'Classic Headband',
@@ -462,6 +497,7 @@ const products = rawProducts.map((p, i) => {
     name = NAME_FALLBACKS[p.category] || 'Everyday Style';
   }
   const { price, compareAtPrice } = retailPriceFor(wholesale, packSize);
+  const colorLabel = colorTailOf(p.name, sku);
   return {
     slug: p.slug,
     name,
@@ -472,8 +508,37 @@ const products = rawProducts.map((p, i) => {
     compareAtPrice,
     image: p.image,
     description: buildDescription(name, p.category),
+    colorLabel,
   };
 });
+
+// Group products by SKU (case-insensitive) so color variants can be linked.
+const bySku = new Map();
+for (const p of products) {
+  if (!p.sku) continue;
+  const key = p.sku.toUpperCase();
+  if (!bySku.has(key)) bySku.set(key, []);
+  bySku.get(key).push(p);
+}
+
+/** Color/style variants for a product: same SKU, different color, deduped. */
+function variantsFor(p) {
+  const group = p.sku ? bySku.get(p.sku.toUpperCase()) : undefined;
+  if (!group) return [];
+  const seen = new Set();
+  const out = [];
+  for (const sibling of group) {
+    if (!sibling.colorLabel || seen.has(sibling.slug)) continue;
+    seen.add(sibling.slug);
+    out.push({ label: sibling.colorLabel, image: sibling.image, slug: sibling.slug });
+  }
+  return out;
+}
+
+for (const p of products) {
+  p.variants = variantsFor(p);
+  delete p.colorLabel;
+}
 
 const enrichedCategories = categories.map((c) => {
   const retailName = RETAIL_CATEGORY_NAMES[c.slug] || toTitleCase(c.name);
@@ -545,6 +610,12 @@ export interface Category {
   image: string;
 }
 
+export interface ProductVariant {
+  label: string;
+  image: string;
+  slug: string;
+}
+
 export interface Product {
   slug: string;
   name: string;
@@ -555,6 +626,7 @@ export interface Product {
   compareAtPrice: number | null;
   image: string;
   description: string;
+  variants: ProductVariant[];
 }
 
 export const categories: Category[] = ${catJson};

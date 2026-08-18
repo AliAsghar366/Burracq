@@ -90,9 +90,9 @@ export default function Header() {
             <span className="mobile-menu-toggleIcon" aria-hidden="true" />
           </button>
 
-          <Link to="/" className="logo" aria-label="BURRACQ home">
+          <Link to="/" className="logo" aria-label="BURACQ home">
             <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-            <span>BURRACQ</span>
+            <span>BURACQ</span>
           </Link>
         </div>
 

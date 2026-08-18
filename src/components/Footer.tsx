@@ -63,7 +63,7 @@ export default function Footer() {
         <div className="footer-brand-block">
           <span className="logo footer-logo">
             <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-            <span>BURRACQ</span>
+            <span>BURACQ</span>
           </span>
           <p className="footer-tagline">Fashion, Accessories &amp; Everyday Finds</p>
           <p className="footer-desc">
@@ -108,7 +108,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-copyright">
-        <p>© {new Date().getFullYear()} BURRACQ. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} BURACQ. All rights reserved.</p>
       </div>
     </footer>
   );

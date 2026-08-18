@@ -46,7 +46,7 @@ export default function ContactPage() {
       <h1>We&rsquo;re Here to Help &mdash; 24/7</h1>
       <p className="info-intro">
         Have a question about a product, your order, shipping, returns, or anything else? The
-        BURRACQ Customer Support Team is available 24 hours a day, 7 days a week to assist you.
+        BURACQ Customer Support Team is available 24 hours a day, 7 days a week to assist you.
       </p>
 
       <div className="contact-cards">
@@ -69,7 +69,7 @@ export default function ContactPage() {
       </div>
 
       <h2 className="contact-block-title">Connect With Us</h2>
-      <p className="contact-block-sub">Follow or message BURRACQ on:</p>
+      <p className="contact-block-sub">Follow or message BURACQ on:</p>
       <div className="social-links">
         <a className="social-link" href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noopener noreferrer">
           WhatsApp
@@ -176,7 +176,7 @@ export default function ContactPage() {
       </p>
 
       <p className="contact-closing">
-        <strong>BURRACQ</strong>
+        <strong>BURACQ</strong>
         <br />
         Shop with confidence. We&rsquo;re always here to help.
       </p>

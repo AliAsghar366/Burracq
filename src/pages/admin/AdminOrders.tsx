@@ -243,7 +243,21 @@ function AdminOrderRow({
   return (
     <>
       <tr className="admin-order-row" onClick={onToggle}>
-        <td className="mono">{o.order_id}</td>
+        <td className="mono">
+          {o.order_id}
+          {o.payment_method && (
+            <span
+              className={`payment-badge${o.payment_method === 'paypal' ? ' online' : ''}`}
+              title={
+                o.payment_method === 'paypal'
+                  ? 'Paid online via PayPal'
+                  : 'Cash on delivery'
+              }
+            >
+              {o.payment_method === 'paypal' ? 'PayPal' : 'COD'}
+            </span>
+          )}
+        </td>
         <td>{formatDate(o.created_at)}</td>
         <td>
           {o.name || o.customer?.name || '—'}

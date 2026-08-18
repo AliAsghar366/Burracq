@@ -1,4 +1,4 @@
-// Main retail navigation for BURRACQ.
+// Main retail navigation for BURACQ.
 // Items with `children` open a dropdown of sub-sections.
 export interface SubNavItem {
   label: string;

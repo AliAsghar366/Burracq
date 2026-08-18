@@ -24,6 +24,8 @@ export interface CheckoutInfo {
   phone: string;
 }
 
+export type PaymentMethod = 'cod' | 'paypal';
+
 export interface Order {
   id: string;
   items: CartItem[];
@@ -32,6 +34,7 @@ export interface Order {
   shipping: number;
   total: number;
   info: CheckoutInfo;
+  paymentMethod: PaymentMethod;
   createdAt: string;
 }
 
@@ -47,7 +50,7 @@ interface CartContextValue {
   clearCart: () => void;
   checkout: CheckoutInfo;
   setCheckoutField: (key: keyof CheckoutInfo, value: string) => void;
-  placeOrder: () => { ok: boolean; message: string };
+  placeOrder: (paymentMethod?: PaymentMethod) => { ok: boolean; message: string };
   lastOrder: Order | null;
 }
 
@@ -66,6 +69,22 @@ function load<T>(key: string, fallback: T): T {
 }
 
 const emptyCheckout: CheckoutInfo = { name: '', address: '', city: '', zip: '', phone: '' };
+
+const REQUIRED_FIELDS: Array<[keyof CheckoutInfo, string]> = [
+  ['name', 'Full name'],
+  ['address', 'Address'],
+  ['city', 'City'],
+  ['zip', 'ZIP / postal code'],
+  ['phone', 'Contact number'],
+];
+
+/** Returns an error message for the first missing delivery field, or null. */
+export function validateCheckout(checkout: CheckoutInfo): string | null {
+  for (const [key, label] of REQUIRED_FIELDS) {
+    if (!checkout[key].trim()) return `${label} is required.`;
+  }
+  return null;
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => load<CartItem[]>(CART_KEY, []));
@@ -110,18 +129,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const shipping = useMemo(() => (subtotal > 0 && subtotal < 100 ? 8 : 0), [subtotal]);
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping]);
 
-  const placeOrder = (): { ok: boolean; message: string } => {
+  const placeOrder = (paymentMethod: PaymentMethod = 'cod'): { ok: boolean; message: string } => {
     if (items.length === 0) return { ok: false, message: 'Your cart is empty.' };
-    const required: Array<[keyof CheckoutInfo, string]> = [
-      ['name', 'Full name'],
-      ['address', 'Address'],
-      ['city', 'City'],
-      ['zip', 'ZIP / postal code'],
-      ['phone', 'Contact number'],
-    ];
-    for (const [key, label] of required) {
-      if (!checkout[key].trim()) return { ok: false, message: `${label} is required.` };
-    }
+    const missing = validateCheckout(checkout);
+    if (missing) return { ok: false, message: missing };
     const order: Order = {
       id: `BQ-${Date.now().toString(36).toUpperCase()}`,
       items,
@@ -130,6 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       shipping,
       total,
       info: checkout,
+      paymentMethod,
       createdAt: new Date().toISOString(),
     };
     // Persist locally (source of truth) and sync to Supabase best-effort.
@@ -151,6 +163,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       address: order.info.address,
       city: order.info.city,
       customer: order.info,
+      payment_method: order.paymentMethod,
     }).then((res) => {
       if (!res.ok) {
         // Table or RLS policy may not exist yet — order is still saved locally.

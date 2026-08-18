@@ -1,5 +1,5 @@
 -- ============================================================
--- BURRACQ — Supabase setup for the admin panel & analytics
+-- BURACQ — Supabase setup for the admin panel & analytics
 -- Run this in the Supabase dashboard: SQL Editor → New query → Run.
 -- ============================================================
 
@@ -17,6 +17,7 @@ alter table public.orders
   add column if not exists address text not null default '',
   add column if not exists city text not null default '',
   add column if not exists customer jsonb,
+  add column if not exists payment_method text,
   add column if not exists status text not null default 'placed',
   add column if not exists created_at timestamptz not null default now();
 

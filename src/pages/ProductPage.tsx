@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProduct, getCategory, productsByCategory } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
@@ -35,10 +35,19 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [openSection, setOpenSection] = useState<string>('details');
+  // The active (selected) variant — the page swaps its image/price in place.
+  const [activeSlug, setActiveSlug] = useState(slug);
 
-  const product = getProduct(slug);
+  const baseProduct = getProduct(slug);
 
-  if (!product) {
+  // Reset to the URL product when navigating between product pages.
+  useEffect(() => {
+    setActiveSlug(slug);
+    setQty(1);
+    setAdded(false);
+  }, [slug]);
+
+  if (!baseProduct) {
     return (
       <section className="container section">
         <h1>Product not found</h1>
@@ -49,10 +58,22 @@ export default function ProductPage() {
     );
   }
 
-  const category = getCategory(product.category);
-  const related = productsByCategory(product.category)
-    .filter((p) => p.slug !== product.slug)
+  // Use the selected variant's own data (name/price/image) when one is chosen.
+  const product = getProduct(activeSlug) ?? baseProduct;
+  const category = getCategory(baseProduct.category);
+  const related = productsByCategory(baseProduct.category)
+    .filter((p) => p.slug !== baseProduct.slug)
     .slice(0, 4);
+
+  const variants = baseProduct.variants || [];
+  const currentVariant = variants.find((v) => v.slug === product.slug);
+  const variantLabel = currentVariant?.label || variants[0]?.label || '';
+
+  const handleSelectVariant = (vSlug: string) => {
+    if (vSlug === product.slug) return;
+    setActiveSlug(vSlug);
+    setAdded(false);
+  };
 
   const handleAdd = () => {
     addToCart(product, qty);
@@ -74,16 +95,22 @@ export default function ProductPage() {
         <span>/</span>
         {category && <Link to={`/category/${category.slug}`}>{category.name}</Link>}
         <span>/</span>
-        <span>{product.name}</span>
+        <span>{baseProduct.name}</span>
       </nav>
 
       <div className="product-view">
         <div className="product-media">
-          <img src={product.image} alt={product.name} />
+          <img
+            key={product.slug}
+            src={product.image}
+            alt={product.name}
+            className="product-main-img"
+          />
+          {variantLabel && <span className="product-variant-tag">{variantLabel}</span>}
         </div>
         <div className="product-info">
-          <h1>{product.name}</h1>
-          {product.sku && <p className="product-sku">Style #{product.sku}</p>}
+          <h1>{baseProduct.name}</h1>
+          {baseProduct.sku && <p className="product-sku">Style #{baseProduct.sku}</p>}
           <p className="product-price">
             {product.compareAtPrice != null && (
               <s
@@ -98,6 +125,32 @@ export default function ProductPage() {
           <p className="product-price-note">
             Free U.S. shipping on orders over $100 • Easy 30-day returns
           </p>
+
+          {variants.length > 0 && (
+            <div className="variant-row">
+              <span className="variant-label">
+                {variantLabel ? `Color / Style: ${variantLabel}` : 'Color / Style'}
+              </span>
+              <div className="swatches" role="group" aria-label="Choose color or style">
+                {variants.map((v) => {
+                  const selected = v.slug === product.slug;
+                  return (
+                    <button
+                      key={v.slug}
+                      type="button"
+                      className={`swatch${selected ? ' selected' : ''}`}
+                      title={v.label}
+                      aria-label={`${v.label}${selected ? ' (selected)' : ''}`}
+                      aria-pressed={selected}
+                      onClick={() => handleSelectVariant(v.slug)}
+                    >
+                      <img src={v.image} alt={v.label} loading="lazy" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="qty-row">
             <label htmlFor="qty">Quantity</label>
@@ -133,7 +186,7 @@ export default function ProductPage() {
               open={openSection === 'details'}
               onToggle={() => toggle('details')}
             >
-              <p dangerouslySetInnerHTML={{ __html: product.description }} />
+              <p dangerouslySetInnerHTML={{ __html: baseProduct.description }} />
             </AccordionSection>
             <AccordionSection
               title="Shipping & Returns"

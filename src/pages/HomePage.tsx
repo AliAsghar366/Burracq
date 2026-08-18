@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { getCategory, getProduct, homeSections, products, productsByCategory, type Product } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
+import BannerSlider from '../components/BannerSlider';
+import PromoCollage from '../components/PromoCollage';
 
 const CATEGORY_TILES = ['women', 'hats', 'bag', 'accessory', 'sale'];
 
@@ -45,10 +47,6 @@ function dedupe(list: Product[]): Product[] {
 }
 
 export default function HomePage() {
-  const heroSlug = homeSections.new[0];
-  const heroProduct = heroSlug ? getProduct(heroSlug) : undefined;
-  const heroImage = heroProduct?.image || products[0]?.image || '';
-
   const trending = dedupe(homeSections.popular.map((s) => getProduct(s)).filter(Boolean) as Product[]);
   const newArrivals = dedupe(homeSections.new.map((s) => getProduct(s)).filter(Boolean) as Product[]);
   const bestSellers = dedupe(homeSections.featured.map((s) => getProduct(s)).filter(Boolean) as Product[]);
@@ -59,26 +57,15 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="hero" aria-label="New styles just dropped">
-        {heroImage && (
-          <img src={heroImage} alt="" className="hero-bg" aria-hidden="true" loading="eager" />
-        )}
-        <div className="hero-overlay" />
-        <div className="container hero-content">
-          <p className="hero-eyebrow">BURRACQ — Fashion, Accessories &amp; Everyday Finds</p>
-          <h1>New Styles Just Dropped</h1>
-          <p className="hero-sub">Fresh finds. Trending styles. Prices you&apos;ll love.</p>
-          <Link to="/category/new" className="btn btn-primary btn-lg">
-            Shop New Arrivals
-          </Link>
-        </div>
-      </section>
+      <BannerSlider />
 
       <div className="trust-bar container" aria-label="Store promises">
         <span>Free U.S. shipping on orders over $100</span>
         <span>Easy 30-day returns</span>
         <span>New styles added weekly</span>
       </div>
+
+      <PromoCollage />
 
       <section className="container section shop-by">
         <h2 className="section-title center">Shop by Category</h2>

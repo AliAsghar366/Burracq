@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart, validateCheckout, type PaymentMethod } from '../context/CartContext';
+import PayPalButton from '../components/PayPalButton';
+import { isPayPalEnabled } from '../lib/paypal';
 
 export default function CartPage() {
   const {
@@ -17,13 +19,26 @@ export default function CartPage() {
     lastOrder,
   } = useCart();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [payment, setPayment] = useState<PaymentMethod>('cod');
+
+  const paypalEnabled = isPayPalEnabled();
 
   const handlePlaceOrder = () => {
-    const res = placeOrder();
+    const res = placeOrder('cod');
     setMessage({ ok: res.ok, text: res.message });
   };
 
+  const handlePayPalSuccess = () => {
+    const res = placeOrder('paypal');
+    if (res.ok) {
+      setMessage({ ok: true, text: `Payment received — ${res.message}` });
+    } else {
+      setMessage({ ok: false, text: res.message });
+    }
+  };
+
   if (lastOrder && items.length === 0) {
+    const paidOnline = lastOrder.paymentMethod === 'paypal';
     return (
       <section className="container section order-confirm">
         <span className="confirm-icon">✓</span>
@@ -32,7 +47,20 @@ export default function CartPage() {
           Order <strong>{lastOrder.id}</strong> — {lastOrder.totalItems} items, total{' '}
           <strong>${lastOrder.total.toFixed(2)}</strong> (incl. shipping).
         </p>
-        <p>We'll contact you shortly to confirm your order and arrange delivery.</p>
+        <p>
+          {paidOnline ? (
+            <>
+              Your payment via <strong>PayPal</strong> has been received and confirmed. We'll
+              contact you shortly to arrange delivery.
+            </>
+          ) : (
+            <>
+              You chose <strong>Cash on Delivery</strong> — keep ${lastOrder.total.toFixed(2)}{' '}
+              ready when your order arrives. We'll contact you shortly to confirm your order and
+              arrange delivery.
+            </>
+          )}
+        </p>
         <Link to="/" className="btn btn-primary">
           Continue shopping
         </Link>
@@ -115,7 +143,6 @@ export default function CartPage() {
             <span>${total.toFixed(2)}</span>
           </div>
           <p className="summary-note">Free shipping on orders of $100 or more.</p>
-          <p className="summary-note">No account or sign-up required. Easy 30-day returns on unworn items.</p>
 
           <h2 className="checkout-title">Delivery Details</h2>
           {fields.map((f) => (
@@ -130,15 +157,78 @@ export default function CartPage() {
             </label>
           ))}
 
-          <button type="button" className="btn btn-primary btn-lg btn-block" onClick={handlePlaceOrder}>
-            Place Order
-          </button>
+          <h2 className="checkout-title">Payment Method</h2>
+          <div className="payment-options" role="radiogroup" aria-label="Payment method">
+            <label className={`payment-option${payment === 'cod' ? ' selected' : ''}`}>
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={payment === 'cod'}
+                onChange={() => setPayment('cod')}
+              />
+              <span className="payment-option-body">
+                <span className="payment-option-title">Cash on Delivery</span>
+                <span className="payment-option-desc">
+                  Pay when your order arrives. No card or account needed.
+                </span>
+              </span>
+            </label>
+
+            {paypalEnabled && (
+              <label className={`payment-option${payment === 'paypal' ? ' selected' : ''}`}>
+                <input
+                  type="radio"
+                  name="payment"
+                  value="paypal"
+                  checked={payment === 'paypal'}
+                  onChange={() => setPayment('paypal')}
+                />
+                <span className="payment-option-body">
+                  <span className="payment-option-title">PayPal</span>
+                  <span className="payment-option-desc">
+                    Pay online now — secure PayPal checkout.
+                  </span>
+                </span>
+              </label>
+            )}
+          </div>
+
+          {payment === 'cod' ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-primary btn-lg btn-block"
+                onClick={handlePlaceOrder}
+              >
+                Place Order — Pay on Delivery
+              </button>
+              <p className="summary-note">
+                No payment now. We'll contact you to confirm your order before dispatch.
+              </p>
+            </>
+          ) : (
+            <div className="paypal-section">
+              {validateCheckout(checkout) === null ? (
+                <PayPalButton
+                  amount={total}
+                  onSuccess={handlePayPalSuccess}
+                  onError={(msg) => setMessage({ ok: false, text: msg })}
+                />
+              ) : (
+                <p className="summary-note paypal-hint">
+                  Fill in your delivery details above to pay with PayPal.
+                </p>
+              )}
+            </div>
+          )}
+
           {message && (
             <p className={message.ok ? 'form-msg ok' : 'form-msg error'}>{message.text}</p>
           )}
+
           <p className="summary-note">
-            No payment is taken online — we&apos;ll contact you to confirm your order and arrange
-            payment. See our{' '}
+            Pay online with PayPal or choose Cash on Delivery. See our{' '}
             <Link to="/shipping-policy">Shipping Policy</Link> and{' '}
             <Link to="/returns">Return &amp; Refund Policy</Link>.
           </p>

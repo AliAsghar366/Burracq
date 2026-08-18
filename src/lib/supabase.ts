@@ -30,6 +30,7 @@ export interface OrderPayload {
     zip: string;
     phone: string;
   };
+  payment_method?: 'cod' | 'paypal' | null;
 }
 
 export async function saveOrderToSupabase(
@@ -77,6 +78,7 @@ export interface AdminOrder {
     zip?: string;
     phone?: string;
   } | null;
+  payment_method?: 'cod' | 'paypal' | null;
   status?: OrderStatus | null;
   created_at?: string | null;
 }
@@ -112,7 +114,7 @@ export async function fetchOrders(): Promise<QueryResult<AdminOrder>> {
     // setup SQL (scripts/setup-supabase.sql) hasn't been run yet.
     let q = supabase
       .from('orders')
-      .select('order_id,created_at,items,total_items,subtotal,bill,name,address,city,customer,status')
+      .select('order_id,created_at,items,total_items,subtotal,bill,name,address,city,customer,status,payment_method')
       .order('created_at', { ascending: false })
       .order('order_id', { ascending: false });
     let { data, error } = await q;
