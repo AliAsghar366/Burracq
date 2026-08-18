@@ -92,7 +92,7 @@ export default function Header() {
 
           <Link to="/" className="logo" aria-label="BURACQ home">
             <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-            <span>BURACQ</span>
+            <img src="/brand-wordmark.svg" className="logo-wordmark" alt="BURACQ" />
           </Link>
         </div>
 

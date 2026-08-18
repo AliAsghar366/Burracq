@@ -39,7 +39,10 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="admin-login-wrap">
       <form className="admin-login" onSubmit={submit}>
-        <h1>BURACQ Admin</h1>
+        <h1 className="admin-login-title">
+          <img src="/brand-wordmark.svg" className="login-wordmark" alt="BURACQ" />
+          <span>Admin</span>
+        </h1>
         <p className="admin-login-sub">Restricted area — sign in to continue.</p>
         <label className="field">
           <span>Password</span>
@@ -73,7 +76,8 @@ export default function AdminApp() {
       <header className="admin-header container">
         <div className="admin-brand">
           <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-          <strong>BURACQ Admin</strong>
+          <img src="/brand-wordmark.svg" className="logo-wordmark admin-wordmark" alt="BURACQ" />
+          <strong>Admin</strong>
         </div>
         <div className="admin-header-actions">
           <a href="/" className="admin-link" onClick={(e) => e.preventDefault()}>

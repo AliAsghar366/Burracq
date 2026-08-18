@@ -186,20 +186,20 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-brand);
-  font-size: 2.2rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--ink);
   line-height: 1;
   white-space: nowrap;
 }
 
-/* BURACQ wordmark — Montserrat Black (900) everywhere it appears */
+/* The BURACQ wordmark image (traced from the brand artwork) */
+.logo-wordmark {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* "Admin" text that follows the wordmark in the admin panel */
 .admin-brand strong,
-.admin-login h1,
-.contact-closing strong {
+.admin-login-title span {
   font-family: var(--font-brand);
   font-weight: 900;
   text-transform: uppercase;
@@ -2092,10 +2092,33 @@ img {
 }
 
 .admin-login h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   font-size: 1.6rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   margin-bottom: 4px;
+}
+
+.login-wordmark {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.admin-wordmark {
+  height: 24px;
+}
+
+.contact-wordmark {
+  height: 30px;
+  width: auto;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.contact-closing strong {
+  color: var(--ink);
 }
 
 .admin-login-sub {
@@ -2765,6 +2788,15 @@ body {
   .logo-mark {
     width: 32px;
     height: 32px;
+  }
+
+  .logo-wordmark {
+    height: 24px;
+  }
+
+  .login-wordmark,
+  .contact-wordmark {
+    height: 24px;
   }
 }
 

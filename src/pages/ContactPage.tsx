@@ -176,7 +176,7 @@ export default function ContactPage() {
       </p>
 
       <p className="contact-closing">
-        <strong>BURACQ</strong>
+        <img src="/brand-wordmark.svg" className="contact-wordmark" alt="BURACQ" />
         <br />
         Shop with confidence. We&rsquo;re always here to help.
       </p>

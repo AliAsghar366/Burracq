@@ -63,7 +63,7 @@ export default function Footer() {
         <div className="footer-brand-block">
           <span className="logo footer-logo">
             <img src="/logo.svg" className="logo-mark" alt="" aria-hidden="true" />
-            <span>BURACQ</span>
+            <img src="/brand-wordmark.svg" className="logo-wordmark" alt="BURACQ" />
           </span>
           <p className="footer-tagline">Fashion, Accessories &amp; Everyday Finds</p>
           <p className="footer-desc">
