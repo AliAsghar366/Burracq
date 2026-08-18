@@ -4,7 +4,7 @@
 // Order creation and capture are handled server-side by the Netlify
 // Functions in /netlify/functions, which hold the secret.
 
-const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
+const clientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined) || 'EG8D_3W76SqZ45zSkUfU3LQfjMlX-fhJqFf8mwxjDXsbAH3woCoLf5bnLkIrmSiRJ58TvZwiyM2Z8q3c';
 const env = (import.meta.env.VITE_PAYPAL_ENV as string | undefined) || 'live';
 
 /** Whether PayPal checkout is available (a client ID is configured). */
