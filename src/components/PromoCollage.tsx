@@ -11,6 +11,9 @@ export default function PromoCollage() {
   const bag = getCategory('bag');
   const women = getCategory('women');
   const accessory = getCategory('accessory');
+  // Trucker cap photo for the typography panel (ilovehana-style inset).
+  const caps = getCategory('baseball-cap');
+  const truckerImage = caps?.image || hats?.image || '';
 
   return (
     <section className="container section promo-collage" aria-label="Featured categories">
@@ -20,18 +23,26 @@ export default function PromoCollage() {
       </Link>
 
       <div className="collage-panel collage-text">
-        <p className="collage-eyebrow">New in</p>
-        <h2>
-          Letter
-          <br />
-          Trucker
-          <br />
-          Caps
-        </h2>
-        <p className="collage-sub">Two-tone styles with embroidered lettering.</p>
-        <Link to="/category/baseball-cap" className="collage-cta">
-          Shop Caps
-        </Link>
+        <div className="collage-text-copy">
+          <p className="collage-eyebrow">New in</p>
+          <h2>
+            Letter
+            <br />
+            Trucker
+            <br />
+            Caps
+          </h2>
+          <p className="collage-sub">Two-tone styles with embroidered lettering.</p>
+          <Link to="/category/baseball-cap" className="collage-cta">
+            Shop Caps
+          </Link>
+        </div>
+        <img
+          className="collage-inset"
+          src={truckerImage}
+          alt="Trucker cap styles"
+          loading="lazy"
+        />
       </div>
 
       <Link to="/category/bag" className="collage-panel collage-small">

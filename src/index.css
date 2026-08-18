@@ -490,20 +490,33 @@ img {
   border-top: 1px solid var(--line);
 }
 
-/* ---------- category tiles ---------- */
+/* ---------- category tiles (ilovehana mixed aspect ratios) ---------- */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 230px;
+  gap: 14px;
 }
 
 .category-tile {
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
-  aspect-ratio: 3 / 4;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-tile.tall {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.category-tile.medium {
+  grid-column: span 5;
+}
+
+.category-tile.small {
+  grid-column: span 3;
 }
 
 .category-tile:hover {
@@ -581,26 +594,33 @@ img {
   grid-row: span 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 28px 32px;
+  padding: 0;
   background: #f4e8da;
   box-shadow: none;
+  overflow: hidden;
+}
+
+.collage-text-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 26px 12px;
 }
 
 .collage-eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--font-head);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--muted);
 }
 
 .collage-text h2 {
-  margin: 0 0 12px;
-  font-size: clamp(2rem, 3.4vw, 2.9rem);
+  margin: 0 0 8px;
+  font-size: clamp(1.7rem, 2.9vw, 2.4rem);
   line-height: 0.98;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -609,9 +629,19 @@ img {
 }
 
 .collage-sub {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+}
+
+/* Trucker cap photo filling the lower part of the typography panel */
+.collage-inset {
+  width: 100%;
+  flex: 1;
+  min-height: 74px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0;
 }
 
 .collage-cta {
@@ -673,6 +703,14 @@ img {
 
   .collage-text {
     grid-column: span 3;
+  }
+
+  .collage-text-copy {
+    padding: 14px 18px 8px;
+  }
+
+  .collage-inset {
+    min-height: 54px;
   }
 
   .collage-wide {
@@ -1516,7 +1554,18 @@ img {
   }
 
   .category-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 190px;
+  }
+
+  .category-tile.tall {
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+
+  .category-tile.medium,
+  .category-tile.small {
+    grid-column: span 3;
   }
 
   .product-view {
@@ -1557,7 +1606,18 @@ img {
   }
 
   .category-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 150px;
+  }
+
+  .category-tile.tall {
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+
+  .category-tile.medium,
+  .category-tile.small {
+    grid-column: span 3;
   }
 
   .cart-item {

@@ -4,7 +4,14 @@ import ProductCard from '../components/ProductCard';
 import BannerSlider from '../components/BannerSlider';
 import PromoCollage from '../components/PromoCollage';
 
-const CATEGORY_TILES = ['women', 'hats', 'bag', 'accessory', 'sale'];
+// ilovehana-style mixed aspect ratios: tall (2 rows) / medium / small panels.
+const CATEGORY_TILES: Array<{ slug: string; size: 'tall' | 'medium' | 'small' }> = [
+  { slug: 'women', size: 'tall' },
+  { slug: 'accessory', size: 'medium' },
+  { slug: 'hats', size: 'small' },
+  { slug: 'bag', size: 'medium' },
+  { slug: 'sale', size: 'small' },
+];
 
 function ProductSection({
   title,
@@ -70,11 +77,15 @@ export default function HomePage() {
       <section className="container section shop-by">
         <h2 className="section-title center">Shop by Category</h2>
         <div className="category-grid">
-          {CATEGORY_TILES.map((slug) => {
+          {CATEGORY_TILES.map(({ slug, size }) => {
             const cat = getCategory(slug);
             if (!cat) return null;
             return (
-              <Link key={slug} to={`/category/${slug}`} className="category-tile">
+              <Link
+                key={slug}
+                to={`/category/${slug}`}
+                className={`category-tile ${size}`}
+              >
                 <img src={cat.image} alt={cat.name} loading="lazy" />
                 <span className="category-tile-label">
                   <strong>{cat.name}</strong>
