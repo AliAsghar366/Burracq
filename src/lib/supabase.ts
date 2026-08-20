@@ -1,11 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Supabase project credentials. Values come from the environment when set,
-// otherwise fall back to the project keys.
+// Supabase project credentials.
+// The anon key is a publishable key (not a secret) — it's designed
+// for client-side use. Real security is enforced by RLS policies.
 const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL || 'https://yoqznxksqxtmgjnwjwgl.supabase.co';
+  import.meta.env.VITE_SUPABASE_URL || 'https://zccnvswkrcqpqpbqctzj.supabase.co';
 const supabaseKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_AWW_6_o5mHCmJad-TsOslQ_1XnhPIOk';
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_rIhyg3CFhMnl3nMGSPgIwg_0hXWNibv';
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 

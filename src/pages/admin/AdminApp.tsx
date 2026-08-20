@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import {
-  checkAdminPassword,
-  endAdminSession,
+  signInAdmin,
+  signOutAdmin,
   isAdminSessionActive,
-  startAdminSession,
 } from '../../lib/adminAuth';
 import AdminDashboard from './AdminDashboard';
 import AdminOrders from './AdminOrders';
@@ -19,20 +18,19 @@ const TABS: { key: Tab; label: string }[] = [
 
 function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    setError(false);
-    const ok = await checkAdminPassword(password);
+    setError('');
+    const result = await signInAdmin(password);
     setBusy(false);
-    if (ok) {
-      startAdminSession();
+    if (result.ok) {
       onSuccess();
     } else {
-      setError(true);
+      setError('Incorrect password. Try again.');
     }
   };
 
@@ -52,11 +50,12 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
             onChange={(e) => setPassword(e.target.value)}
             autoFocus
             placeholder="••••••••••"
+            required
           />
         </label>
-        {error && <p className="form-msg error">Incorrect password. Try again.</p>}
+        {error && <p className="form-msg error">{error}</p>}
         <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-          {busy ? 'Checking…' : 'Sign In'}
+          {busy ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
     </div>
@@ -87,7 +86,7 @@ export default function AdminApp() {
             type="button"
             className="btn btn-outline-dark btn-quick"
             onClick={() => {
-              endAdminSession();
+              signOutAdmin();
               setAuthed(false);
             }}
           >

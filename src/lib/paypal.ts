@@ -3,7 +3,10 @@
 // This implementation creates orders directly from the browser using the
 // PayPal JavaScript SDK. No server-side functions needed — only the Client ID.
 
-const clientId = (import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined) || 'EG8D_3W76SqZ45zSkUfU3LQfjMlX-fhJqFf8mwxjDXsbAH3woCoLf5bnLkIrmSiRJ58TvZwiyM2Z8q3c';
+// PayPal client ID — must be set in .env (see .env.example).
+// This is a public/client-side key (not a secret), but should still be
+// configured via environment variables rather than hardcoded.
+const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
 
 /** Whether PayPal checkout is available (a client ID is configured). */
 export function isPayPalEnabled(): boolean {

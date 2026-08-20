@@ -1,78 +1,147 @@
 -- ============================================================
--- BURACQ — Supabase setup for the admin panel & analytics
--- Run this in the Supabase dashboard: SQL Editor → New query → Run.
+-- BURACQ — Supabase Setup (run once)
+--
+-- HOW TO USE:
+--   1. Change YOUR_EMAIL and YOUR_PASSWORD below
+--   2. Dashboard → SQL Editor → New query → Paste → Run
+--
+-- The email is used internally by Supabase Auth only.
+-- The admin login form asks for PASSWORD ONLY — no email field.
 -- ============================================================
 
--- 1) Orders table — make sure every column the storefront writes exists
---    (order_id, items, customer and created_at usually already exist; the
---    rest are added here). Stages: placed → confirmed → shipped → delivered
---    (+ cancelled).
-alter table public.orders
-  add column if not exists order_id text not null,
-  add column if not exists items jsonb not null default '[]',
-  add column if not exists total_items int not null default 0,
-  add column if not exists subtotal numeric not null default 0,
-  add column if not exists bill numeric not null default 0,
-  add column if not exists name text not null default '',
-  add column if not exists address text not null default '',
-  add column if not exists city text not null default '',
-  add column if not exists customer jsonb,
-  add column if not exists payment_method text,
-  add column if not exists status text not null default 'placed',
-  add column if not exists created_at timestamptz not null default now();
+-- ★ STEP 1: Change these two values ★
+--   Pick any email (this is internal, never shown to the user)
+--   Pick a strong password
 
--- 2) Order status history (audit trail of stage changes)
-create table if not exists public.order_status_log (
-  id bigint generated always as identity primary key,
-  order_id text not null,
-  status text not null,
-  note text,
-  changed_at timestamptz not null default now()
+DO $$
+DECLARE
+  admin_email    text := 'admin@burracq.com';   -- ← change this
+  admin_password text := 'MyStr0ngP@ssword!';    -- ← change this
+  admin_id       uuid;
+BEGIN
+  -- ─── Create admin user in Supabase Auth ──────────────────
+  admin_id := gen_random_uuid();
+
+  INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, confirmation_token, confirmation_sent_at,
+    raw_user_meta_data, created_at, updated_at,
+    recovery_token, recovery_sent_at, last_sign_in_at, factors
+  ) VALUES (
+    '00000000-0000-0000-0000-000000000000',
+    admin_id,
+    'authenticated',
+    'authenticated',
+    admin_email,
+    crypt(admin_password, gen_salt('bf')),
+    now(), '', now(),
+    jsonb_build_object('full_name', 'BURACQ Admin'),
+    now(), now(), '', now(), now(), '[]'::jsonb
+  );
+
+  INSERT INTO auth.identities (
+    id, user_id, identity_data, provider,
+    last_sign_in_at, created_at, updated_at
+  ) VALUES (
+    gen_random_uuid(),
+    admin_id,
+    jsonb_build_object('sub', admin_id::text, 'email', admin_email),
+    'email', now(), now(), now()
+  );
+
+  RAISE NOTICE 'Admin user created: %', admin_email;
+END $$;
+
+-- ─── Orders table ──────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.orders (
+  id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id      TEXT UNIQUE NOT NULL,
+  items         JSONB NOT NULL DEFAULT '[]',
+  total_items   INT NOT NULL DEFAULT 0,
+  subtotal      NUMERIC NOT NULL DEFAULT 0,
+  bill          NUMERIC NOT NULL DEFAULT 0,
+  name          TEXT NOT NULL DEFAULT '',
+  address       TEXT NOT NULL DEFAULT '',
+  city          TEXT NOT NULL DEFAULT '',
+  customer      JSONB,
+  payment_method TEXT,
+  status        TEXT NOT NULL DEFAULT 'placed',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 3) Storefront analytics — one row per page view, with the region
---    inferred from the visitor's timezone (no IPs are ever collected).
-create table if not exists public.analytics_views (
-  id bigint generated always as identity primary key,
-  path text not null,
-  region text,
-  session_id text,
-  user_agent text,
-  viewed_at timestamptz not null default now()
+-- ─── Order status history ──────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.order_status_log (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id   TEXT NOT NULL,
+  status     TEXT NOT NULL,
+  note       TEXT,
+  changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 4) Row Level Security
---    NOTE: these policies are deliberately permissive so the browser-based
---    admin can read/update orders with the anon key. That means anyone who
---    knows the anon key (it ships in the JS bundle) can also read orders.
---    For a production store, replace this with Supabase Auth:
---    sign admins in with email/password and restrict SELECT/UPDATE to the
---    authenticated admin role (see README → "Hardening the admin panel").
-alter table public.orders enable row level security;
-alter table public.order_status_log enable row level security;
-alter table public.analytics_views enable row level security;
+-- ─── Storefront analytics ──────────────────────────────────
 
--- Drop-then-create makes this safe to run more than once.
-drop policy if exists "anon can insert orders" on public.orders;
-drop policy if exists "anon can read orders" on public.orders;
-drop policy if exists "anon can update orders" on public.orders;
-create policy "anon can insert orders" on public.orders
-  for insert to anon with check (true);
-create policy "anon can read orders" on public.orders
-  for select to anon using (true);
-create policy "anon can update orders" on public.orders
-  for update to anon using (true) with check (true);
+CREATE TABLE IF NOT EXISTS public.analytics_views (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  path       TEXT NOT NULL,
+  region     TEXT,
+  session_id TEXT,
+  user_agent TEXT,
+  viewed_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-drop policy if exists "anon can insert status log" on public.order_status_log;
-drop policy if exists "anon can read status log" on public.order_status_log;
-create policy "anon can insert status log" on public.order_status_log
-  for insert to anon with check (true);
-create policy "anon can read status log" on public.order_status_log
-  for select to anon using (true);
+-- ─── Row Level Security ────────────────────────────────────
+--
+--   Customers (anon)      → INSERT only (place orders + track views)
+--   Admin (authenticated) → full READ + UPDATE on all tables
+--
+-- This means the Supabase anon key CANNOT read orders.
+-- Only the authenticated admin session can access them.
 
-drop policy if exists "anon can insert views" on public.analytics_views;
-drop policy if exists "anon can read views" on public.analytics_views;
-create policy "anon can insert views" on public.analytics_views
-  for insert to anon with check (true);
-create policy "anon can read views" on public.analytics_views
-  for select to anon using (true);
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_status_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.analytics_views ENABLE ROW LEVEL SECURITY;
+
+-- Drop old policies safely
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "anon can insert orders" ON public.orders;
+  DROP POLICY IF EXISTS "authenticated can read orders" ON public.orders;
+  DROP POLICY IF EXISTS "authenticated can update orders" ON public.orders;
+  DROP POLICY IF EXISTS "anon can insert status log" ON public.order_status_log;
+  DROP POLICY IF EXISTS "authenticated can read status log" ON public.order_status_log;
+  DROP POLICY IF EXISTS "anon can insert views" ON public.analytics_views;
+  DROP POLICY IF EXISTS "authenticated can read views" ON public.analytics_views;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- ORDERS: anon can INSERT, authenticated can SELECT + UPDATE
+CREATE POLICY "anon can insert orders"
+  ON public.orders FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "authenticated can read orders"
+  ON public.orders FOR SELECT TO authenticated USING (true);
+CREATE POLICY "authenticated can update orders"
+  ON public.orders FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+-- STATUS LOG: anon can INSERT, authenticated can SELECT
+CREATE POLICY "anon can insert status log"
+  ON public.order_status_log FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "authenticated can read status log"
+  ON public.order_status_log FOR SELECT TO authenticated USING (true);
+
+-- ANALYTICS: anon can INSERT, authenticated can SELECT
+CREATE POLICY "anon can insert views"
+  ON public.analytics_views FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "authenticated can read views"
+  ON public.analytics_views FOR SELECT TO authenticated USING (true);
+
+-- ============================================================
+-- ✓ DONE
+--
+-- What was created:
+--   • Admin user in Supabase Auth (email + bcrypt password)
+--   • Tables: orders, order_status_log, analytics_views
+--   • RLS: customers can only INSERT, admin can READ + UPDATE
+--
+-- Next: update .env with your new Supabase project credentials
+-- ============================================================

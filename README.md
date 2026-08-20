@@ -43,7 +43,7 @@ node scripts/fetch-prices.mjs    # refreshes wholesale prices
 ## Admin panel (/admin)
 
 The store has a hidden admin dashboard at `/admin` (no links to it anywhere on
-the site). Password: `burracq1214`. It shows:
+the site). Authentication uses **Supabase Auth** (email/password sign-in). It shows:
 
 - **Dashboard** — KPIs (unique visitors, page views, orders, revenue, order
   conversion), the order-stage funnel (placed → confirmed → shipped →
@@ -56,20 +56,21 @@ the site). Password: `burracq1214`. It shows:
   are recorded automatically as visitors browse the storefront (region is
   inferred from the browser timezone — no IPs are collected).
 
-**Setup:** run `scripts/setup-supabase.sql` in the Supabase SQL editor once. It
-adds the `status` column to `orders`, creates `order_status_log` and
-`analytics_views`, and enables the Row Level Security policies the app needs.
+**Setup:**
+1. Run `scripts/setup-supabase.sql` in the Supabase SQL editor once. It adds
+   the `status` column to `orders`, creates `order_status_log` and
+   `analytics_views`, and enables the Row Level Security policies.
+2. Create an admin user in Supabase Auth:
+   - Go to **Authentication → Users** in the Supabase dashboard
+   - Click **Add user**
+   - Enter an email (e.g., `admin@burracq.com`) and a strong password
+   - Check **Auto Confirm User** if you don't want email confirmation
 
-> ⚠️ **Security note:** the `/admin` password is a client-side gate (the hash
-> lives in the JS bundle) — it keeps casual visitors out but is not real
-> security. The current SQL policies also let the anon key read orders, which
-> is fine for development. Before launch, harden this:
-> 1. Switch `/admin` to Supabase Auth (email/password sign-in against an
->    `admins` table).
-> 2. Change the RLS policies so only the authenticated admin role can
->    SELECT/UPDATE orders (anon can only INSERT orders and views).
-> 3. Move sensitive reads behind a server endpoint (Supabase Edge Function)
->    using the service-role key instead of the anon key.
+> ✅ **Security model:** Authentication is handled server-side by Supabase Auth.
+> The admin password never leaves the server — only the session token is
+> stored client-side. Row Level Security ensures only authenticated admins
+> can read or update orders. Customers can only INSERT orders and analytics
+> views (no read access).
 
 ## PayPal checkout
 

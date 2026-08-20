@@ -3,8 +3,10 @@
 // the browser bundle. The public client ID may be exposed; the secret must
 // only ever live in the Netlify environment / local .env.
 
-const ENV = 'sandbox';
-const API_BASE = 'https://api-m.sandbox.paypal.com';
+const ENV = process.env.PAYPAL_ENV || 'live';
+const API_BASE = ENV === 'sandbox'
+  ? 'https://api-m.sandbox.paypal.com'
+  : 'https://api-m.paypal.com';
 
 let tokenCache = { token: null, expiresAt: 0 };
 
@@ -14,8 +16,11 @@ export async function getAccessToken() {
     return tokenCache.token;
   }
 
-  const clientId = 'EG8D_3W76SqZ45zSkUfU3LQfjMlX-fhJqFf8mwxjDXsbAH3woCoLf5bnLkIrmSiRJ58TvZwiyM2Z8q3c';
-  const secret = 'BAAWurhXSkR0cvZGDKvx5s-TXrkz9cks0_CdOYjWIu90cw2v9O6U1qbR08o74PHmnnTzoPcZWW0zF11ATk';
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_CLIENT_SECRET;
+  if (!clientId || !secret) {
+    throw new Error('PayPal credentials not configured. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in environment variables.');
+  }
 
   const res = await fetch(`${API_BASE}/v1/oauth2/token`, {
     method: 'POST',
