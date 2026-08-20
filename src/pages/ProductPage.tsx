@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProduct, getCategory, productsByCategory, type ProductVariant } from '../data/catalog';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
+import { sanitizeHtml } from '../lib/sanitize';
 
 function AccordionSection({
   title,
@@ -195,7 +196,7 @@ export default function ProductPage() {
               open={openSection === 'details'}
               onToggle={() => toggle('details')}
             >
-              <p dangerouslySetInnerHTML={{ __html: baseProduct.description }} />
+              <p dangerouslySetInnerHTML={{ __html: sanitizeHtml(baseProduct.description) }} />
             </AccordionSection>
             <AccordionSection
               title="Shipping & Returns"

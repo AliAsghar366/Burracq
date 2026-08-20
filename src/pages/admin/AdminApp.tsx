@@ -20,6 +20,7 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [locked, setLocked] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -30,7 +31,8 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
     if (result.ok) {
       onSuccess();
     } else {
-      setError('Incorrect password. Try again.');
+      setError(result.error || 'Incorrect password. Try again.');
+      if (result.locked) setLocked(true);
     }
   };
 
@@ -51,11 +53,16 @@ function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
             autoFocus
             placeholder="••••••••••"
             required
+            disabled={locked}
           />
         </label>
-        {error && <p className="form-msg error">{error}</p>}
-        <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign In'}
+        {error && (
+          <p className={`form-msg ${locked ? 'error locked' : 'error'}`}>
+            {locked && '🔒 '}{error}
+          </p>
+        )}
+        <button type="submit" className="btn btn-primary btn-block" disabled={busy || locked}>
+          {locked ? 'Locked' : busy ? 'Signing in…' : 'Sign In'}
         </button>
       </form>
     </div>

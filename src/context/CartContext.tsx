@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { saveOrderToSupabase } from '../lib/supabase';
+import { validateOrderPrices } from '../lib/orderValidation';
 
 export interface CartItem {
   slug: string;
@@ -133,6 +134,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (items.length === 0) return { ok: false, message: 'Your cart is empty.' };
     const missing = validateCheckout(checkout);
     if (missing) return { ok: false, message: missing };
+    // Validate prices against catalog (prevents price tampering)
+    const priceCheck = validateOrderPrices(items);
+    if (!priceCheck.valid) return { ok: false, message: priceCheck.error || 'Invalid order.' };
     const order: Order = {
       id: `BQ-${Date.now().toString(36).toUpperCase()}`,
       items,
