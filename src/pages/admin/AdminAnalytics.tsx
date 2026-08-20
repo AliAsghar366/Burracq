@@ -22,6 +22,15 @@ export default function AdminAnalytics() {
     load();
   }, []);
 
+  // Auto-refresh analytics every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const res = await fetchViews();
+      if (res.ok) setViews(res.data || []);
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const filtered = useMemo(() => {
     return views.filter((v) => {
       if (!v.viewed_at) return true;

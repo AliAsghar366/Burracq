@@ -39,6 +39,23 @@ export default function AdminDashboard() {
     };
   }, [reload]);
 
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      (async () => {
+        const [o, v] = await Promise.all([fetchOrders(), fetchViews()]);
+        setState((s) => ({
+          ...s,
+          orders: o.ok ? (o.data || s.orders) : s.orders,
+          views: v.ok ? (v.data || s.views) : s.views,
+          orderError: o.ok ? undefined : o.error,
+          viewError: v.ok ? undefined : v.error,
+        }));
+      })();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const stats = useMemo(() => {
     const orders = state.orders;
     const views = state.views;

@@ -46,6 +46,15 @@ export default function AdminOrders() {
     load();
   }, []);
 
+  // Auto-refresh orders every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const res = await fetchOrders();
+      if (res.ok) setOrders(res.data || []);
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = orders.filter((o) => {
